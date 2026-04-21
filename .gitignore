@@ -1,0 +1,7 @@
+node_modules
+data/**.json
+data/**
+package.tgz
+.yarn/install-state.gz
+.claude
+config.ts

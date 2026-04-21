@@ -1,0 +1,30 @@
+{
+    "name": "dynamodb-extract",
+    "version": "1.0.0",
+    "description": "",
+    "type": "module",
+    "keywords": [],
+    "author": "Webiny",
+    "license": "MIT",
+    "scripts": {
+        "start": "tsx src/index.ts",
+        "typecheck": "tsc --noEmit",
+        "postinstall": "yarn set version berry"
+    },
+    "dependencies": {
+        "@aws-sdk/client-dynamodb": "^3.1033.0",
+        "@aws-sdk/credential-providers": "^3.1033.0",
+        "@aws-sdk/lib-dynamodb": "^3.1033.0",
+        "@inquirer/prompts": "^8.4.2",
+        "tsx": "^4.21.0",
+        "typescript": "^6.0.3",
+        "zod": "^4.3.6"
+    },
+    "devDependencies": {
+        "@types/node": "^24.12.2"
+    },
+    "engines": {
+        "node": ">=24.0.0"
+    },
+    "packageManager": "yarn@4.14.1"
+}
