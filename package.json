@@ -8,7 +8,9 @@
     "license": "MIT",
     "scripts": {
         "start": "tsx src/index.ts",
-        "typecheck": "tsc --noEmit",
+        "ts-check": "tsc --noEmit",
+        "format:fix": "oxfmt 'src/**/*.{ts,js}' '.adiorc.js' 'setup-yarnrc.js' 'tsconfig.json' 'config.**'",
+        "format:check": "oxfmt --check",
         "postinstall": "yarn set version berry"
     },
     "dependencies": {
@@ -21,7 +23,9 @@
         "zod": "^4.3.6"
     },
     "devDependencies": {
-        "@types/node": "^24.12.2"
+        "@types/node": "^24.12.2",
+        "adio": "^3.0.0",
+        "oxfmt": "^0.46.0"
     },
     "engines": {
         "node": ">=24.0.0"
