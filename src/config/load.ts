@@ -45,6 +45,7 @@ export const loadConfig = async (): Promise<ResolvedTable[]> => {
   return tables.map((table) => ({
     name: table.name,
     description: table.description,
+    writable: table.writable,
     awsProfile: table.awsProfile ?? defaults.awsProfile,
     region: table.region ?? defaults.region,
   }));

@@ -26,12 +26,19 @@ const main = async (): Promise<void> => {
   }
 
   // action === "send"
+  const writableTables = tables.filter((t) => t.writable);
+  if (writableTables.length === 0) {
+    console.log(
+      "No writable tables in config.ts. Set `writable: true` on the table you want to send to."
+    );
+    return;
+  }
   const sourcePath = await promptSourceFile();
   if (sourcePath === null) {
     console.log("No files in data/ to send.");
     return;
   }
-  const table = await promptTable(tables, "Which table should receive the data?");
+  const table = await promptTable(writableTables, "Which table should receive the data?");
   await confirmSend(sourcePath, table);
   await runSend(sourcePath, table);
 };

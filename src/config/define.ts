@@ -5,6 +5,7 @@ const nonEmpty = z.string().min(1);
 export const TableConfigSchema = z.object({
   name: nonEmpty,
   description: nonEmpty.max(25, "description must be 25 characters or fewer"),
+  writable: z.boolean(),
   awsProfile: nonEmpty.optional(),
   region: nonEmpty.optional(),
 });
@@ -53,6 +54,7 @@ export type Config = z.infer<typeof ConfigSchema>;
 export interface ResolvedTable {
   name: string;
   description: string;
+  writable: boolean;
   awsProfile: string;
   region: string;
 }
