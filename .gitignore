@@ -5,3 +5,13 @@ package.tgz
 .yarn/install-state.gz
 .claude
 config.ts
+.DS_Store
+.idea
+.vscode
+*.log
+*.tsbuildinfo
+dist
+coverage
+*.tgz
+*.zip
+*.tar.gz

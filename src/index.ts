@@ -10,45 +10,45 @@ import { promptSourceFile } from "./prompts/sourceFile.js";
 import { promptTable } from "./prompts/table.js";
 
 const main = async (): Promise<void> => {
-  const tables = await loadConfig();
-  const action = await promptAction();
+    const tables = await loadConfig();
+    const action = await promptAction();
 
-  if (action === "exit") return;
+    if (action === "exit") return;
 
-  if (action === "download") {
-    const table = await promptTable(tables, "Which table do you want to download?");
-    const format = await promptDownloadFormat();
-    const initialPath = dataFilePath(table.description, format);
-    const destPath = await resolveDestPath(initialPath, extensionFor(format));
-    if (destPath === null) return;
-    await runDownload(table, destPath, format);
-    return;
-  }
+    if (action === "download") {
+        const table = await promptTable(tables, "Which table do you want to download?");
+        const format = await promptDownloadFormat();
+        const initialPath = dataFilePath(table.description, format);
+        const destPath = await resolveDestPath(initialPath, extensionFor(format));
+        if (destPath === null) return;
+        await runDownload(table, destPath, format);
+        return;
+    }
 
-  // action === "send"
-  const writableTables = tables.filter((t) => t.writable);
-  if (writableTables.length === 0) {
-    console.log(
-      "No writable tables in config.ts. Set `writable: true` on the table you want to send to."
-    );
-    return;
-  }
-  const sourcePath = await promptSourceFile();
-  if (sourcePath === null) {
-    console.log("No files in data/ to send.");
-    return;
-  }
-  const table = await promptTable(writableTables, "Which table should receive the data?");
-  await confirmSend(sourcePath, table);
-  await runSend(sourcePath, table);
+    // action === "send"
+    const writableTables = tables.filter(t => t.writable);
+    if (writableTables.length === 0) {
+        console.log(
+            "No writable tables in config.ts. Set `writable: true` on the table you want to send to."
+        );
+        return;
+    }
+    const sourcePath = await promptSourceFile();
+    if (sourcePath === null) {
+        console.log("No files in data/ to send.");
+        return;
+    }
+    const table = await promptTable(writableTables, "Which table should receive the data?");
+    await confirmSend(sourcePath, table);
+    await runSend(sourcePath, table);
 };
 
 try {
-  await main();
+    await main();
 } catch (err) {
-  if (err instanceof Error && err.name === "ExitPromptError") {
-    process.exit(0);
-  }
-  console.error(err instanceof Error ? err.message : String(err));
-  process.exit(1);
+    if (err instanceof Error && err.name === "ExitPromptError") {
+        process.exit(0);
+    }
+    console.error(err instanceof Error ? err.message : String(err));
+    process.exit(1);
 }

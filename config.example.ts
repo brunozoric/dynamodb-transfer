@@ -3,7 +3,7 @@ import { defineConfig } from "./src/config/define.js";
 export default defineConfig({
   defaults: {
     awsProfile: "default",
-    region: "eu-central-1",
+    region: "eu-central-1"
   },
   tables: [
     // `description` is shown in the selection prompt and also drives the
@@ -12,11 +12,11 @@ export default defineConfig({
     // be set explicitly — tables with `writable: false` never appear in
     // the Send destination list, so accidental writes to the wrong table
     // are impossible.
-    { name: "my-table", description: "Production", writable: false },
+    { name: "my-table", description: "Production", writable: false }
 
     // Per-table awsProfile/region are optional; omit to inherit defaults.
     // Flip `writable: true` only on tables you intentionally want to be
     // restore targets.
     // { name: "staging-table", description: "Staging", writable: true, awsProfile: "stage", region: "us-east-1" },
-  ],
+  ]
 });
