@@ -6,6 +6,7 @@ import { promptAction } from "./prompts/action.js";
 import { confirmSend } from "./prompts/confirmSend.js";
 import { promptDownloadFormat } from "./prompts/downloadFormat.js";
 import { resolveDestPath } from "./prompts/overwrite.js";
+import { promptSegments } from "./prompts/segments.js";
 import { promptSourceFile } from "./prompts/sourceFile.js";
 import { promptTable } from "./prompts/table.js";
 
@@ -17,11 +18,12 @@ const main = async (): Promise<void> => {
 
     if (action === "download") {
         const table = await promptTable(tables, "Which table do you want to download?");
-        const format = await promptDownloadFormat();
+        const segments = await promptSegments();
+        const format = await promptDownloadFormat(segments);
         const initialPath = dataFilePath(table.description, format);
         const destPath = await resolveDestPath(initialPath, extensionFor(format));
         if (destPath === null) return;
-        await runDownload(table, destPath, format);
+        await runDownload(table, destPath, format, segments);
         return;
     }
 

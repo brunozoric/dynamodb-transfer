@@ -21,7 +21,7 @@ Interactive CLI for downloading and uploading DynamoDB tables.
 
    Each table entry needs:
    - `name` — the real DynamoDB table name.
-   - `description` — ≤ 25 characters, unique across entries. Used as the exported filename.
+   - `description` — ≤ 40 characters, unique across entries. Used as the exported filename.
    - `writable` — `true` / `false`. Tables with `writable: false` never appear in the Send destination list, so accidental writes are impossible. Flip to `true` only for tables you intentionally want as restore targets.
    - `awsProfile` / `region` — optional; inherit the top-level defaults when omitted.
 

@@ -7,7 +7,7 @@ export default defineConfig({
   },
   tables: [
     // `description` is shown in the selection prompt and also drives the
-    // exported filename (camelCased). Must be unique, non-empty, and ≤ 25
+    // exported filename (camelCased). Must be unique, non-empty, and ≤ 40
     // characters. `name` is the real DynamoDB table name. `writable` MUST
     // be set explicitly — tables with `writable: false` never appear in
     // the Send destination list, so accidental writes to the wrong table
