@@ -7,10 +7,11 @@ You are working on **`dynamodb-extract`**, an interactive CLI that downloads Dyn
 1. `README.md` — user-facing: what the tool does, how to set up `config.ts`, where downloads go.
 2. `docs/superpowers/agent-handoff.md` — **start here if you're picking up work mid-flight.** Covers the current DI refactor, what's done, what's next, and which conventions to follow.
 3. `docs/webiny-di-guide.md` — conventions for `@webiny/di`. Critical if you're touching any DI code. Read §1 and §6 in full; the short-name-reuse-with-alias pattern in §6 is easy to get wrong on first try.
-4. `examples/S3Processor/` — reference implementation of a feature folder. The canonical shape to copy. Read all four files.
-5. `docs/superpowers/specs/` — approved design docs.
-6. `docs/superpowers/plans/` — implementation plans. Each plan has complete code; follow it step-by-step.
-7. `docs/backlog.md` — open follow-ups the user hasn't picked up yet.
+4. `docs/superpowers/specs/` — approved design docs.
+5. `docs/superpowers/plans/` — implementation plans. Each plan has complete code; follow it step-by-step.
+6. `docs/backlog.md` — open follow-ups the user hasn't picked up yet.
+
+`docs/webiny-di-guide.md` §6 is the canonical reference for feature folder layout — five file templates plus a complete worked example.
 
 ## Current state (2026-04-21)
 
@@ -22,7 +23,7 @@ When you're asked to continue the refactor, read `docs/superpowers/agent-handoff
 
 ## Critical conventions (non-negotiable)
 
-- **`@webiny/di` naming:** abstraction token + `createImplementation` export share the same short name (e.g. `Config`, not `DefaultConfig` or `ConfigAbstraction`). The impl file uses a local rename alias — `import { Config as ConfigAbstraction } from "./abstractions/index.ts"` — so consumers never see "Abstraction" or "Default" suffixes anywhere. Types live on `AbstractionName.Interface` via namespace merge. See `examples/S3Processor/` for the canonical shape.
+- **`@webiny/di` naming:** abstraction token + `createImplementation` export share the same short name (e.g. `Config`, not `DefaultConfig` or `ConfigAbstraction`). The impl file uses a local rename alias — `import { Config as ConfigAbstraction } from "./abstractions/index.ts"` — so consumers never see "Abstraction" or "Default" suffixes anywhere. Types live on `AbstractionName.Interface` via namespace merge. See `docs/webiny-di-guide.md` §6 for the canonical shape.
 - **Feature area naming:** always ≥ 2 levels, e.g. `"Config/Config"`, `"Aws/ClientFactory"`, `"Commands/Download"`.
 - **Feature `index.ts`:** exports the abstraction token + feature only. **Never re-export the `createImplementation` output** from the feature's public surface — that stays internal.
 - **Method signatures:** options-object style (`run(options: X.RunOptions)`), not positional. Easier to extend later.

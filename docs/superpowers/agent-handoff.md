@@ -13,7 +13,7 @@ You're picking up a DI refactor of `dynamodb-extract`. The brainstorm and plan a
 1. **`docs/superpowers/specs/2026-04-21-di-refactor-design.md`** — the approved design spec. Every decision is locked in here with rationale.
 2. **`docs/superpowers/plans/2026-04-21-di-refactor.md`** — the 7-task implementation plan. Every task has full code and exact commands. Don't improvise; follow the plan.
 3. **`docs/webiny-di-guide.md`** — the project's conventions for `@webiny/di`. Updated in this session (§1, §6) to document the short-name reuse + local rename alias trick.
-4. **`examples/S3Processor/`** — reference implementation showing the naming and folder layout the user wants. Read all four files (`abstractions/S3Processor.ts`, `abstractions/index.ts`, `S3Processor.ts`, `feature.ts`, `index.ts`). This is the source of truth for the convention.
+4. **`docs/webiny-di-guide.md` §6** — canonical five-file templates plus a worked example (S3Processor). This is the source of truth for the convention; the `examples/` directory no longer exists.
 
 Don't skim these. The naming convention is unusual (abstraction token and impl export share the same short name; the impl file uses a local rename alias) and is easy to get wrong on first try.
 
@@ -32,7 +32,7 @@ ca72f94 docs(di-guide): document short-name reuse + rename alias convention
 
 Everything before `ca72f94` is pre-DI-refactor (parallel scan, writable flag, etc. — all landed).
 
-**Uncommitted working tree changes:** user may have in-progress edits in `examples/S3Processor/S3Processor.ts` and `examples/S3Processor/index.ts` — don't touch these unless explicitly asked.
+**Uncommitted working tree changes:** working tree is clean as of 2026-04-21.
 
 ---
 
@@ -53,7 +53,7 @@ Tests live in `__tests__/` at the project root, using `vitest` + `dynalite` (loc
 
 ## 4. Conventions (CRITICAL — do not improvise)
 
-These all come from `examples/S3Processor/` and `docs/webiny-di-guide.md`. The plan's code blocks already apply them, but if you need to write any code not in the plan, follow these:
+These all come from `docs/webiny-di-guide.md` (§6 is the canonical reference). The plan's code blocks already apply them, but if you need to write any code not in the plan, follow these:
 
 ### 4.1 Short-name reuse + local rename alias
 
