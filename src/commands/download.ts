@@ -9,12 +9,13 @@ import type { DownloadFormat } from "../lib/paths.js";
 export const runDownload = async (
     table: ResolvedTable,
     destPath: string,
-    format: DownloadFormat
+    format: DownloadFormat,
+    segments: number
 ): Promise<void> => {
     const client = createClient(table);
     try {
         if (format === "ndjson") {
-            await downloadNdjson(client, table.name, destPath);
+            await downloadNdjson(client, table.name, destPath, segments);
         } else {
             await downloadJson(client, table.name, destPath);
         }
@@ -43,23 +44,38 @@ const downloadJson = async (client: Client, tableName: string, destPath: string)
 const downloadNdjson = async (
     client: Client,
     tableName: string,
-    destPath: string
+    destPath: string,
+    segments: number
 ): Promise<void> => {
     const stream = createWriteStream(destPath);
     let total = 0;
-    try {
+
+    const worker = async (segment: number): Promise<void> => {
         let ExclusiveStartKey: Record<string, unknown> | undefined;
         do {
             const result = await client.send(
-                new ScanCommand({ TableName: tableName, ExclusiveStartKey })
+                new ScanCommand({
+                    TableName: tableName,
+                    Segment: segment,
+                    TotalSegments: segments,
+                    ExclusiveStartKey
+                })
             );
             for (const item of result.Items ?? []) {
                 await writeLine(stream, JSON.stringify(item) + "\n");
             }
             total += result.Items?.length ?? 0;
             ExclusiveStartKey = result.LastEvaluatedKey;
-            console.log(`Scanned ${total} items...`);
+            console.log(
+                segments > 1
+                    ? `Scanned ${total} items... (seg ${segment})`
+                    : `Scanned ${total} items...`
+            );
         } while (ExclusiveStartKey);
+    };
+
+    try {
+        await Promise.all(Array.from({ length: segments }, (_, i) => worker(i)));
     } finally {
         await closeStream(stream);
     }

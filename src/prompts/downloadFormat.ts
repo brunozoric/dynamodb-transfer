@@ -1,8 +1,9 @@
 import { select } from "@inquirer/prompts";
 import type { DownloadFormat } from "../lib/paths.js";
 
-export const promptDownloadFormat = (): Promise<DownloadFormat> =>
-    select<DownloadFormat>({
+export const promptDownloadFormat = (segments: number): Promise<DownloadFormat> => {
+    const parallel = segments > 1;
+    return select<DownloadFormat>({
         message: "Which file format?",
         choices: [
             {
@@ -11,8 +12,10 @@ export const promptDownloadFormat = (): Promise<DownloadFormat> =>
             },
             {
                 name: "JSON array — pretty-printed single array",
-                value: "json"
+                value: "json",
+                disabled: parallel ? "(requires 1 segment)" : false
             }
         ],
         default: "ndjson"
     });
+};
