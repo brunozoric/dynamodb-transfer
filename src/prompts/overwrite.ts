@@ -32,8 +32,8 @@ export const resolveDestPath = async (
                 const withoutExt = trimmed.endsWith(extension)
                     ? trimmed.slice(0, -extension.length)
                     : trimmed;
-                if (withoutExt.length > 25) {
-                    return `Filename must be 25 characters or fewer (excluding ${extension})`;
+                if (withoutExt.length > 40) {
+                    return `Filename must be 40 characters or fewer (excluding ${extension})`;
                 }
                 return true;
             }

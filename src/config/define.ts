@@ -4,7 +4,7 @@ const nonEmpty = z.string().min(1);
 
 export const TableConfigSchema = z.object({
     name: nonEmpty,
-    description: nonEmpty.max(25, "description must be 25 characters or fewer"),
+    description: nonEmpty.max(40, "description must be 40 characters or fewer"),
     writable: z.boolean(),
     awsProfile: nonEmpty.optional(),
     region: nonEmpty.optional()
