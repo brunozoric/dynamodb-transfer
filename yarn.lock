@@ -1870,6 +1870,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@webiny/di@npm:^0.2.3":
+  version: 0.2.3
+  resolution: "@webiny/di@npm:0.2.3"
+  dependencies:
+    reflect-metadata: "npm:^0.2.2"
+  checksum: 10c0/cb84ef5664c448405c7d17e46ce367d5c648a0d9a27451c83837af88a2095dc4fbac699e1c2f0b644491ef15c47572bb072288ca7c351c3ee4a435ebab947ba8
+  languageName: node
+  linkType: hard
+
 "abbrev@npm:^4.0.0":
   version: 4.0.0
   resolution: "abbrev@npm:4.0.0"
@@ -1982,6 +1991,7 @@ __metadata:
     "@aws-sdk/lib-dynamodb": "npm:^3.1033.0"
     "@inquirer/prompts": "npm:^8.4.2"
     "@types/node": "npm:^24.12.2"
+    "@webiny/di": "npm:^0.2.3"
     adio: "npm:^3.0.0"
     oxfmt: "npm:^0.46.0"
     tsx: "npm:^4.21.0"
@@ -2523,6 +2533,13 @@ __metadata:
   version: 6.1.0
   resolution: "proc-log@npm:6.1.0"
   checksum: 10c0/4f178d4062733ead9d71a9b1ab24ebcecdfe2250916a5b1555f04fe2eda972a0ec76fbaa8df1ad9c02707add6749219d118a4fc46dc56bdfe4dde4b47d80bb82
+  languageName: node
+  linkType: hard
+
+"reflect-metadata@npm:^0.2.2":
+  version: 0.2.2
+  resolution: "reflect-metadata@npm:0.2.2"
+  checksum: 10c0/1cd93a15ea291e420204955544637c264c216e7aac527470e393d54b4bb075f10a17e60d8168ec96600c7e0b9fcc0cb0bb6e91c3fbf5b0d8c9056f04e6ac1ec2
   languageName: node
   linkType: hard
 
