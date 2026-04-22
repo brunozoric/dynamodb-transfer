@@ -1,7 +1,7 @@
 import { select, input } from "@inquirer/prompts";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { DATA_DIR } from "../lib/paths.js";
+import { DATA_DIR } from "~/lib/paths.ts";
 
 type OverwriteChoice = "overwrite" | "rename" | "cancel";
 

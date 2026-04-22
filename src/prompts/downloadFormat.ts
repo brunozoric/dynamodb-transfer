@@ -1,5 +1,5 @@
 import { select } from "@inquirer/prompts";
-import type { DownloadFormat } from "../lib/paths.js";
+import type { DownloadFormat } from "~/lib/paths.ts";
 
 export const promptDownloadFormat = (segments: number): Promise<DownloadFormat> => {
     const parallel = segments > 1;

@@ -52,6 +52,7 @@ class DownloadImpl implements DownloadAbstraction.Interface {
         let total = 0;
 
         const worker = async (segment: number): Promise<void> => {
+            let segmentCount = 0;
             let ExclusiveStartKey: Record<string, unknown> | undefined;
             do {
                 const result = await client.send(
@@ -65,11 +66,13 @@ class DownloadImpl implements DownloadAbstraction.Interface {
                 for (const item of result.Items ?? []) {
                     await this.writeLine(stream, JSON.stringify(item) + "\n");
                 }
-                total += result.Items?.length ?? 0;
+                const batchCount = result.Items?.length ?? 0;
+                segmentCount += batchCount;
+                total += batchCount;
                 ExclusiveStartKey = result.LastEvaluatedKey;
                 console.log(
                     segments > 1
-                        ? `Scanned ${total} items... (seg ${segment})`
+                        ? `Seg ${segment}: ${segmentCount} items (total ${total})`
                         : `Scanned ${total} items...`
                 );
             } while (ExclusiveStartKey);
