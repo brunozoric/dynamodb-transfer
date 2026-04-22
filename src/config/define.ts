@@ -1,55 +1,12 @@
-import { z } from "zod";
-
-const nonEmpty = z.string().min(1);
-
-export const TableConfigSchema = z.object({
-    name: nonEmpty,
-    description: nonEmpty.max(40, "description must be 40 characters or fewer"),
-    writable: z.boolean(),
-    awsProfile: nonEmpty.optional(),
-    region: nonEmpty.optional()
-});
-
-export const DefaultsSchema = z.object({
-    awsProfile: nonEmpty,
-    region: nonEmpty
-});
-
-export const ConfigSchema = z
-    .object({
-        defaults: DefaultsSchema,
-        tables: z.array(TableConfigSchema).min(1, "tables must be a non-empty array")
-    })
-    .superRefine((config, ctx) => {
-        const names = new Map<string, number>();
-        const descriptions = new Map<string, number>();
-        config.tables.forEach((table, i) => {
-            const prevName = names.get(table.name);
-            if (prevName !== undefined) {
-                ctx.addIssue({
-                    code: "custom",
-                    path: ["tables", i, "name"],
-                    message: `duplicate of tables[${prevName}].name`
-                });
-            } else {
-                names.set(table.name, i);
-            }
-            const prevDesc = descriptions.get(table.description);
-            if (prevDesc !== undefined) {
-                ctx.addIssue({
-                    code: "custom",
-                    path: ["tables", i, "description"],
-                    message: `duplicate of tables[${prevDesc}].description`
-                });
-            } else {
-                descriptions.set(table.description, i);
-            }
-        });
-    });
-
-export type TableConfig = z.infer<typeof TableConfigSchema>;
-export type Defaults = z.infer<typeof DefaultsSchema>;
-export type Config = z.infer<typeof ConfigSchema>;
+// Temporary shim — points old consumers at the relocated schema.
+// Removed entirely in the final cleanup task.
+export {
+    ConfigSchema,
+    type RawConfig as Config,
+    type RawTableConfig as TableConfig,
+    type RawDefaults as Defaults
+} from "~/features/Config/abstractions/schema.ts";
+export { defineConfig, ConfigError } from "~/features/Config/abstractions/Config.ts";
 
 export interface ResolvedTable {
     name: string;
@@ -58,5 +15,3 @@ export interface ResolvedTable {
     awsProfile: string;
     region: string;
 }
-
-export const defineConfig = (config: Config): Config => config;
