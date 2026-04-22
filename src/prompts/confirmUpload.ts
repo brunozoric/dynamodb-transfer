@@ -1,7 +1,7 @@
 import { input } from "@inquirer/prompts";
 import type { ResolvedTable } from "../config/define.js";
 
-export const confirmSend = async (sourcePath: string, table: ResolvedTable): Promise<void> => {
+export const confirmUpload = async (sourcePath: string, table: ResolvedTable): Promise<void> => {
     console.log("");
     console.log(
         `About to write ${sourcePath} → ${table.name} (${table.region}, profile: ${table.awsProfile})`
