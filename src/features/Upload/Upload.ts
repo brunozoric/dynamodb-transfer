@@ -3,6 +3,7 @@ import type { BatchWriteCommandInput, BatchWriteCommandOutput } from "@aws-sdk/l
 import { createReadStream, readFileSync } from "node:fs";
 import { createInterface } from "node:readline";
 import { ClientFactory } from "~/features/AwsClient/index.ts";
+import { Logger } from "~/features/Logger/index.ts";
 import { detectFormat } from "~/lib/paths.ts";
 import { Upload as UploadAbstraction } from "./abstractions/index.ts";
 
@@ -10,7 +11,10 @@ const CHUNK_SIZE = 25;
 const BACKOFF_MS = 500;
 
 class UploadImpl implements UploadAbstraction.Interface {
-    public constructor(private readonly clientFactory: ClientFactory.Interface) {}
+    public constructor(
+        private readonly logger: Logger.Interface,
+        private readonly clientFactory: ClientFactory.Interface
+    ) {}
 
     public async run(options: UploadAbstraction.RunOptions): Promise<void> {
         const { sourcePath, table } = options;
@@ -41,9 +45,9 @@ class UploadImpl implements UploadAbstraction.Interface {
             const chunk = items.slice(i, i + CHUNK_SIZE);
             await this.sendChunk(client, tableName, chunk);
             written += chunk.length;
-            console.log(`Written ${written}/${items.length}`);
+            this.logger.info(`Written ${written}/${items.length}`);
         }
-        console.log(`Wrote ${items.length} items to ${tableName}`);
+        this.logger.info(`Wrote ${items.length} items to ${tableName}`);
     }
 
     private async sendNdjson(
@@ -66,7 +70,7 @@ class UploadImpl implements UploadAbstraction.Interface {
             if (buffer.length >= CHUNK_SIZE) {
                 await this.sendChunk(client, tableName, buffer);
                 written += buffer.length;
-                console.log(`Written ${written} items...`);
+                this.logger.info(`Written ${written} items...`);
                 buffer = [];
             }
         }
@@ -74,7 +78,7 @@ class UploadImpl implements UploadAbstraction.Interface {
             await this.sendChunk(client, tableName, buffer);
             written += buffer.length;
         }
-        console.log(`Wrote ${written} items to ${tableName}`);
+        this.logger.info(`Wrote ${written} items to ${tableName}`);
     }
 
     private async sendChunk(
@@ -103,5 +107,5 @@ class UploadImpl implements UploadAbstraction.Interface {
 
 export const Upload = UploadAbstraction.createImplementation({
     implementation: UploadImpl,
-    dependencies: [ClientFactory]
+    dependencies: [Logger, ClientFactory]
 });

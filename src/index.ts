@@ -1,4 +1,5 @@
 import { bootstrap } from "./bootstrap.ts";
+import { Logger } from "~/features/Logger/index.ts";
 import { Config } from "~/features/Config/index.ts";
 import { Download } from "~/features/Download/index.ts";
 import { Upload } from "~/features/Upload/index.ts";
@@ -11,8 +12,10 @@ import { promptSegments } from "~/prompts/segments.ts";
 import { promptSourceFile } from "~/prompts/sourceFile.ts";
 import { promptTable } from "~/prompts/table.ts";
 
+const container = bootstrap();
+const logger = container.resolve(Logger);
+
 const main = async (): Promise<void> => {
-    const container = bootstrap();
     const config = container.resolve(Config);
     const download = container.resolve(Download);
     const upload = container.resolve(Upload);
@@ -40,14 +43,14 @@ const main = async (): Promise<void> => {
     // action === "upload"
     const writableTables = tables.filter(t => t.writable);
     if (writableTables.length === 0) {
-        console.log(
+        logger.info(
             "No writable tables in config.ts. Set `writable: true` on the table you want to upload to."
         );
         return;
     }
     const sourcePath = await promptSourceFile();
     if (sourcePath === null) {
-        console.log("No files in data/ to upload.");
+        logger.info("No files in data/ to upload.");
         return;
     }
     const table = await promptTable(writableTables, "Which table should receive the data?");
@@ -61,6 +64,6 @@ try {
     if (err instanceof Error && err.name === "ExitPromptError") {
         process.exit(0);
     }
-    console.error(err instanceof Error ? err.message : String(err));
+    logger.error(err instanceof Error ? err.message : String(err));
     process.exit(1);
 }

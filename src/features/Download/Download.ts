@@ -2,10 +2,14 @@ import { ScanCommand } from "@aws-sdk/lib-dynamodb";
 import { createWriteStream, writeFileSync } from "node:fs";
 import type { WriteStream } from "node:fs";
 import { ClientFactory } from "~/features/AwsClient/index.ts";
+import { Logger } from "~/features/Logger/index.ts";
 import { Download as DownloadAbstraction } from "./abstractions/index.ts";
 
 class DownloadImpl implements DownloadAbstraction.Interface {
-    public constructor(private readonly clientFactory: ClientFactory.Interface) {}
+    public constructor(
+        private readonly logger: Logger.Interface,
+        private readonly clientFactory: ClientFactory.Interface
+    ) {}
 
     public async run(options: DownloadAbstraction.RunOptions): Promise<void> {
         const { table, destPath, format, segments } = options;
@@ -35,11 +39,11 @@ class DownloadImpl implements DownloadAbstraction.Interface {
             );
             items.push(...(result.Items ?? []));
             ExclusiveStartKey = result.LastEvaluatedKey;
-            console.log(`Scanned ${items.length} items...`);
+            this.logger.info(`Scanned ${items.length} items...`);
         } while (ExclusiveStartKey);
 
         writeFileSync(destPath, JSON.stringify(items, null, 2));
-        console.log(`Exported ${items.length} items to ${destPath}`);
+        this.logger.info(`Exported ${items.length} items to ${destPath}`);
     }
 
     private async downloadNdjson(
@@ -70,7 +74,7 @@ class DownloadImpl implements DownloadAbstraction.Interface {
                 segmentCount += batchCount;
                 total += batchCount;
                 ExclusiveStartKey = result.LastEvaluatedKey;
-                console.log(
+                this.logger.info(
                     segments > 1
                         ? `Seg ${segment}: ${segmentCount} items (total ${total})`
                         : `Scanned ${total} items...`
@@ -83,7 +87,7 @@ class DownloadImpl implements DownloadAbstraction.Interface {
         } finally {
             await this.closeStream(stream);
         }
-        console.log(`Exported ${total} items to ${destPath}`);
+        this.logger.info(`Exported ${total} items to ${destPath}`);
     }
 
     private writeLine(stream: WriteStream, line: string): Promise<void> {
@@ -121,5 +125,5 @@ class DownloadImpl implements DownloadAbstraction.Interface {
 
 export const Download = DownloadAbstraction.createImplementation({
     implementation: DownloadImpl,
-    dependencies: [ClientFactory]
+    dependencies: [Logger, ClientFactory]
 });
