@@ -6,6 +6,7 @@ import { ConfigFeature } from "~/features/Config/index.ts";
 import { AwsClientFeature } from "~/features/AwsClient/index.ts";
 import { DownloadFeature } from "~/features/Download/index.ts";
 import { UploadFeature } from "~/features/Upload/index.ts";
+import { CliFeature } from "~/features/Cli/index.ts";
 
 export function bootstrap(): Container {
     const container = new Container();
@@ -16,5 +17,6 @@ export function bootstrap(): Container {
     AwsClientFeature.register(container);
     DownloadFeature.register(container);
     UploadFeature.register(container);
+    CliFeature.register(container);
     return container;
 }

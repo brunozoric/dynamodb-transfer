@@ -6,6 +6,7 @@ import { PrompterFeature } from "~/features/Prompter/index.ts";
 import { AwsClientFeature } from "~/features/AwsClient/index.ts";
 import { DownloadFeature } from "~/features/Download/index.ts";
 import { UploadFeature } from "~/features/Upload/index.ts";
+import { CliFeature } from "~/features/Cli/index.ts";
 
 export interface TestContainerOptions {
   tables?: Config.ResolvedTable[];
@@ -20,6 +21,7 @@ export function createTestContainer(options: TestContainerOptions = {}): Contain
   AwsClientFeature.register(container);
   DownloadFeature.register(container);
   UploadFeature.register(container);
+  CliFeature.register(container);
   if (options.tables) {
     container.registerInstance(Config, makeFakeConfig(options.tables));
   }
