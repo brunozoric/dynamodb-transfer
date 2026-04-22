@@ -1,14 +1,12 @@
 import { createAbstraction } from "~/base/index.ts";
 import { ConfigSchema, type RawConfig } from "./schema.ts";
 
-export interface IConfig {
-    load(): Promise<Config.ResolvedTable[]>;
-}
-
-export const Config = createAbstraction<IConfig>("Config/Config");
+export const Config = createAbstraction<Config.Interface>("Config/Config");
 
 export namespace Config {
-    export type Interface = IConfig;
+    export interface Interface {
+        load(): Promise<ResolvedTable[]>;
+    }
     export interface ResolvedTable {
         name: string;
         description: string;
