@@ -2485,6 +2485,7 @@ __metadata:
     "@aws-sdk/lib-dynamodb": "npm:^3.1033.0"
     "@aws-sdk/util-dynamodb": "npm:^3.996.2"
     "@inquirer/prompts": "npm:^8.4.2"
+    "@smithy/node-http-handler": "npm:^4.6.0"
     "@types/node": "npm:^24.12.2"
     "@vitest/coverage-v8": "npm:^4.1.5"
     "@webiny/di": "npm:^0.2.3"

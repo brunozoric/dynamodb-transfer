@@ -6,10 +6,20 @@ import {
   ScanCommand,
   type AttributeValue
 } from "@aws-sdk/client-dynamodb";
+import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { randomUUID } from "node:crypto";
+import http from "node:http";
 
-const client = new DynamoDBClient({});
+// Disable keep-alive so connections do not linger between tests.  When the
+// Download feature runs a parallel segment scan it opens multiple concurrent
+// HTTP connections; if those connections stay alive in the pool they can
+// confuse the dynalite server for subsequent requests.
+const client = new DynamoDBClient({
+  requestHandler: new NodeHttpHandler({
+    httpAgent: new http.Agent({ keepAlive: false })
+  })
+});
 
 export interface TestTableSchema {
   partitionKey: string;

@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@aws-sdk/util-dynamodb": "^3.996.2",
+    "@smithy/node-http-handler": "^4.6.0",
     "@types/node": "^24.12.2",
     "@vitest/coverage-v8": "^4.1.5",
     "adio": "^3.0.0",
