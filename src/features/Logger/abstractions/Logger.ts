@@ -7,6 +7,7 @@ export interface ILogger {
     error(message: string, ...args: unknown[]): void;
     fatal(message: string, ...args: unknown[]): void;
     done(message: string): void;
+    attachFile(path: string): void;
 }
 
 export const Logger = createAbstraction<ILogger>("Core/Logger");

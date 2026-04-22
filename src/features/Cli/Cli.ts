@@ -50,6 +50,7 @@ class CliImpl implements CliAbstraction.Interface {
         if (destPath === null) {
             return;
         }
+        await this.maybeAttachLogFile(table.name);
         await this.download.run({ table, destPath, format, segments });
     }
 
@@ -71,7 +72,18 @@ class CliImpl implements CliAbstraction.Interface {
             message: "Which table should receive the data?"
         });
         await this.prompter.confirmUpload({ sourcePath, table });
+        await this.maybeAttachLogFile(table.name);
         await this.upload.run({ sourcePath, table });
+    }
+
+    private async maybeAttachLogFile(tableName: string): Promise<void> {
+        const save = await this.prompter.logToFile();
+        if (!save) {
+            return;
+        }
+        const logPath = this.paths.logFilePath({ tableName });
+        this.logger.attachFile(logPath);
+        this.logger.info(`Saving logs to ${logPath}`);
     }
 }
 

@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { Paths as PathsAbstraction } from "./abstractions/index.ts";
 
 const DATA_DIR = "data";
+const LOG_DIR = ".log";
 
 const EXTENSIONS: Record<PathsAbstraction.DownloadFormat, string> = {
     ndjson: ".ndjson",
@@ -52,6 +53,11 @@ class PathsImpl implements PathsAbstraction.Interface {
             return "json";
         }
         return null;
+    }
+
+    public logFilePath(options: PathsAbstraction.LogFilePathOptions): string {
+        const unixTimestamp = Math.floor(Date.now() / 1000);
+        return join(LOG_DIR, `${toCamelCase(options.tableName)}-${unixTimestamp}.log`);
     }
 }
 

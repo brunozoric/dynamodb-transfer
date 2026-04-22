@@ -1,5 +1,5 @@
 import { Container } from "@webiny/di";
-import { LoggerFeature } from "~/features/Logger/index.ts";
+import { LoggerFeature, readLoggerParamsFromEnv } from "~/features/Logger/index.ts";
 import { PathsFeature } from "~/features/Paths/index.ts";
 import { PrompterFeature } from "~/features/Prompter/index.ts";
 import { ConfigFeature } from "~/features/Config/index.ts";
@@ -10,7 +10,7 @@ import { CliFeature } from "~/features/Cli/index.ts";
 
 export function bootstrap(): Container {
     const container = new Container();
-    LoggerFeature.register(container, { logLevel: "info", json: false });
+    LoggerFeature.register(container, readLoggerParamsFromEnv(process.env));
     PathsFeature.register(container);
     PrompterFeature.register(container);
     ConfigFeature.register(container);

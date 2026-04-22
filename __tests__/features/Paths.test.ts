@@ -77,6 +77,27 @@ describe("Paths", () => {
     });
   });
 
+  describe("logFilePath", () => {
+    it("builds .log/<camelCase>-<unixTs>.log with the current timestamp", () => {
+      const before = Math.floor(Date.now() / 1000);
+      const result = resolvePaths().logFilePath({ tableName: "my-prod-users" });
+      const after = Math.floor(Date.now() / 1000);
+
+      const match = result.match(/^(.+?)[/\\]myProdUsers-(\d+)\.log$/);
+      expect(match).not.toBeNull();
+      const prefix = match![1]!;
+      const ts = Number(match![2]);
+      expect(prefix).toBe(".log");
+      expect(ts).toBeGreaterThanOrEqual(before);
+      expect(ts).toBeLessThanOrEqual(after);
+    });
+
+    it("camelCases the raw table name before inserting it", () => {
+      const result = resolvePaths().logFilePath({ tableName: "order-events-v2" });
+      expect(result).toMatch(/orderEventsV2-\d+\.log$/);
+    });
+  });
+
   describe("inDataDir", () => {
     it("joins the data dir with the given basename", () => {
       expect(resolvePaths().inDataDir("file.ndjson")).toBe(join("data", "file.ndjson"));

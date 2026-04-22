@@ -1,4 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { PinoLogger } from "./PinoLogger.ts";
 
 interface CapturedStdout {
@@ -130,6 +133,56 @@ describe("PinoLogger", () => {
             expect(capture.lines).toHaveLength(2);
             expect(parseLine(capture.lines[0]).type).toBe("error");
             expect(parseLine(capture.lines[1]).type).toBe("fatal");
+        });
+    });
+
+    describe("attachFile", () => {
+        let tmp: string;
+
+        beforeEach(() => {
+            tmp = mkdtempSync(join(tmpdir(), "pino-file-"));
+        });
+
+        afterEach(() => {
+            rmSync(tmp, { recursive: true, force: true });
+        });
+
+        it("creates the parent directory if missing", () => {
+            const target = join(tmp, "nested", "sub", "out.log");
+            expect(existsSync(join(tmp, "nested"))).toBe(false);
+
+            const logger = new PinoLogger({ logLevel: "silent", transport: "pretty" });
+            logger.attachFile(target);
+            logger.info("ping");
+
+            expect(existsSync(join(tmp, "nested", "sub"))).toBe(true);
+            expect(existsSync(target)).toBe(true);
+        });
+
+        it("writes one plain-text line per log call, with timestamp and level prefix", () => {
+            const target = join(tmp, "out.log");
+            const logger = new PinoLogger({ logLevel: "silent", transport: "pretty" });
+            logger.attachFile(target);
+
+            logger.info("first");
+            logger.error("boom");
+            logger.done("finished");
+
+            const contents = readFileSync(target, "utf-8");
+            const lines = contents.split("\n").filter(Boolean);
+
+            expect(lines).toHaveLength(3);
+            expect(lines[0]).toMatch(
+                /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z \[info\] first$/
+            );
+            expect(lines[1]).toMatch(/\[error\] boom$/);
+            expect(lines[2]).toMatch(/\[done\] finished$/);
+        });
+
+        it("does not write to any file before attachFile is called", () => {
+            const logger = new PinoLogger({ logLevel: "silent", transport: "pretty" });
+            expect(() => logger.info("no file yet")).not.toThrow();
+            // tmp should stay empty
         });
     });
 });

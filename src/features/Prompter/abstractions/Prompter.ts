@@ -12,6 +12,7 @@ export interface IPrompter {
     sourceFile(): Promise<string | null>;
     destPath(options: IDestPathOptions): Promise<string | null>;
     confirmUpload(options: IConfirmUploadOptions): Promise<void>;
+    logToFile(): Promise<boolean>;
 }
 
 export interface ITableOptions {

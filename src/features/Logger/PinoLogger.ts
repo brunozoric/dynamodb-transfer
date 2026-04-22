@@ -1,5 +1,7 @@
 import pino, { type LevelWithSilentOrString } from "pino";
 import { Writable } from "node:stream";
+import { appendFileSync, mkdirSync } from "node:fs";
+import { dirname } from "node:path";
 import { Logger } from "./abstractions/index.ts";
 
 export type LogTransport = "pretty" | "json";
@@ -43,6 +45,7 @@ const createJsonDestination = (): Writable => {
 export class PinoLogger implements Logger.Interface {
     private readonly logger: pino.Logger;
     private readonly transport: LogTransport | undefined;
+    private filePath: string | undefined;
 
     public constructor(params: PinoLoggerParams) {
         const base = {
@@ -70,29 +73,49 @@ export class PinoLogger implements Logger.Interface {
 
     public debug(message: string, ...args: unknown[]): void {
         this.logger.debug(message, ...(args as any[]));
+        this.teeToFile("debug", message);
     }
 
     public info(message: string, ...args: unknown[]): void {
         this.logger.info(message, ...(args as any[]));
+        this.teeToFile("info", message);
     }
 
     public warn(message: string, ...args: unknown[]): void {
         this.logger.warn(message, ...(args as any[]));
+        this.teeToFile("warn", message);
     }
 
     public error(message: string, ...args: unknown[]): void {
         this.logger.error(message, ...(args as any[]));
+        this.teeToFile("error", message);
     }
 
     public fatal(message: string, ...args: unknown[]): void {
         this.logger.fatal(message, ...(args as any[]));
+        this.teeToFile("fatal", message);
     }
 
     public done(message: string): void {
         if (this.transport === "json") {
             this.logger.info({ _done: true }, message);
+        } else {
+            this.logger.info(message);
+        }
+        this.teeToFile("done", message);
+    }
+
+    public attachFile(path: string): void {
+        const dir = dirname(path);
+        mkdirSync(dir, { recursive: true });
+        this.filePath = path;
+    }
+
+    private teeToFile(level: JsonLogType, message: string): void {
+        if (this.filePath === undefined) {
             return;
         }
-        this.logger.info(message);
+        const ts = new Date().toISOString();
+        appendFileSync(this.filePath, `${ts} [${level}] ${message}\n`);
     }
 }

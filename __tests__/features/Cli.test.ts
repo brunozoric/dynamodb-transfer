@@ -72,7 +72,8 @@ describe("Cli", () => {
         table: async ({ tables: ts }) => ts[0]!,
         segments: async () => 1,
         downloadFormat: async () => "ndjson",
-        destPath: async () => destPath
+        destPath: async () => destPath,
+        logToFile: async () => false
       })
     );
 
@@ -108,7 +109,8 @@ describe("Cli", () => {
         table: async ({ tables: ts }) => ts[0]!,
         confirmUpload: async () => {
           // accept: no-op
-        }
+        },
+        logToFile: async () => false
       })
     );
 

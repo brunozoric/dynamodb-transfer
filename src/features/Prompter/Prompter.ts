@@ -1,4 +1,4 @@
-import { select, input } from "@inquirer/prompts";
+import { select, input, confirm } from "@inquirer/prompts";
 import { existsSync } from "node:fs";
 import { basename } from "node:path";
 import type { Config } from "~/features/Config/index.ts";
@@ -143,6 +143,13 @@ class PrompterImpl implements PrompterAbstraction.Interface {
             validate: value =>
                 value.trim() === options.table.name ||
                 `Input does not match "${options.table.name}". Try again or press Ctrl+C to cancel.`
+        });
+    }
+
+    public logToFile(): Promise<boolean> {
+        return confirm({
+            message: "Save logs to a file?",
+            default: false
         });
     }
 }
