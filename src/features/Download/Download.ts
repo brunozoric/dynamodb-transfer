@@ -43,7 +43,7 @@ class DownloadImpl implements DownloadAbstraction.Interface {
         } while (ExclusiveStartKey);
 
         writeFileSync(destPath, JSON.stringify(items, null, 2));
-        this.logger.info(`Exported ${items.length} items to ${destPath}`);
+        this.logger.done(`Exported ${items.length} items to ${destPath}`);
     }
 
     private async downloadNdjson(
@@ -87,7 +87,7 @@ class DownloadImpl implements DownloadAbstraction.Interface {
         } finally {
             await this.closeStream(stream);
         }
-        this.logger.info(`Exported ${total} items to ${destPath}`);
+        this.logger.done(`Exported ${total} items to ${destPath}`);
     }
 
     private writeLine(stream: WriteStream, line: string): Promise<void> {

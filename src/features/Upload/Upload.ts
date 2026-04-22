@@ -48,7 +48,7 @@ class UploadImpl implements UploadAbstraction.Interface {
             written += chunk.length;
             this.logger.info(`Written ${written}/${items.length}`);
         }
-        this.logger.info(`Wrote ${items.length} items to ${tableName}`);
+        this.logger.done(`Wrote ${items.length} items to ${tableName}`);
     }
 
     private async sendNdjson(
@@ -79,7 +79,7 @@ class UploadImpl implements UploadAbstraction.Interface {
             await this.sendChunk(client, tableName, buffer);
             written += buffer.length;
         }
-        this.logger.info(`Wrote ${written} items to ${tableName}`);
+        this.logger.done(`Wrote ${written} items to ${tableName}`);
     }
 
     private async sendChunk(
