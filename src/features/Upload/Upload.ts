@@ -4,7 +4,7 @@ import { createReadStream, readFileSync } from "node:fs";
 import { createInterface } from "node:readline";
 import { ClientFactory } from "~/features/AwsClient/index.ts";
 import { Logger } from "~/features/Logger/index.ts";
-import { detectFormat } from "~/lib/paths.ts";
+import { Paths } from "~/features/Paths/index.ts";
 import { Upload as UploadAbstraction } from "./abstractions/index.ts";
 
 const CHUNK_SIZE = 25;
@@ -13,13 +13,14 @@ const BACKOFF_MS = 500;
 class UploadImpl implements UploadAbstraction.Interface {
     public constructor(
         private readonly logger: Logger.Interface,
+        private readonly paths: Paths.Interface,
         private readonly clientFactory: ClientFactory.Interface
     ) {}
 
     public async run(options: UploadAbstraction.RunOptions): Promise<void> {
         const { sourcePath, table } = options;
         const client = this.clientFactory.create(table);
-        const format = detectFormat(sourcePath);
+        const format = this.paths.detectFormat(sourcePath);
         try {
             if (format === "ndjson") {
                 await this.sendNdjson(client, table.name, sourcePath);
@@ -107,5 +108,5 @@ class UploadImpl implements UploadAbstraction.Interface {
 
 export const Upload = UploadAbstraction.createImplementation({
     implementation: UploadImpl,
-    dependencies: [Logger, ClientFactory]
+    dependencies: [Logger, Paths, ClientFactory]
 });

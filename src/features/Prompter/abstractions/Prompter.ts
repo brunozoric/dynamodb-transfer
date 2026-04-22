@@ -1,13 +1,13 @@
 import { createAbstraction } from "~/base/index.ts";
 import type { Config } from "~/features/Config/index.ts";
-import type { DownloadFormat } from "~/lib/paths.ts";
+import type { Paths } from "~/features/Paths/index.ts";
 
 export type IAction = "download" | "upload" | "exit";
 
 export interface IPrompter {
     action(): Promise<IAction>;
     table(options: ITableOptions): Promise<Config.ResolvedTable>;
-    downloadFormat(options: IDownloadFormatOptions): Promise<DownloadFormat>;
+    downloadFormat(options: IDownloadFormatOptions): Promise<Paths.DownloadFormat>;
     segments(): Promise<number>;
     sourceFile(): Promise<string | null>;
     destPath(options: IDestPathOptions): Promise<string | null>;

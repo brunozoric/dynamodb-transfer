@@ -1,14 +1,15 @@
 import { select, input } from "@inquirer/prompts";
 import { existsSync } from "node:fs";
-import { join } from "node:path";
-import { DATA_DIR, listDataFiles } from "~/lib/paths.ts";
+import { basename } from "node:path";
 import type { Config } from "~/features/Config/index.ts";
-import type { DownloadFormat } from "~/lib/paths.ts";
+import { Paths } from "~/features/Paths/index.ts";
 import { Prompter as PrompterAbstraction } from "./abstractions/index.ts";
 
 type OverwriteChoice = "overwrite" | "rename" | "cancel";
 
 class PrompterImpl implements PrompterAbstraction.Interface {
+    public constructor(private readonly paths: Paths.Interface) {}
+
     public action(): Promise<PrompterAbstraction.Action> {
         return select<PrompterAbstraction.Action>({
             message: "What would you like to do?",
@@ -32,9 +33,9 @@ class PrompterImpl implements PrompterAbstraction.Interface {
 
     public downloadFormat(
         options: PrompterAbstraction.DownloadFormatOptions
-    ): Promise<DownloadFormat> {
+    ): Promise<Paths.DownloadFormat> {
         const parallel = options.segments > 1;
-        return select<DownloadFormat>({
+        return select<Paths.DownloadFormat>({
             message: "Which file format?",
             choices: [
                 {
@@ -74,15 +75,15 @@ class PrompterImpl implements PrompterAbstraction.Interface {
     }
 
     public async sourceFile(): Promise<string | null> {
-        const files = listDataFiles();
-        if (files.length === 0) {
+        const paths = this.paths.listDataFiles();
+        if (paths.length === 0) {
             return null;
         }
         return select<string>({
             message: "Which file do you want to upload?",
-            choices: files.map(file => ({
-                name: file,
-                value: join(DATA_DIR, file)
+            choices: paths.map(p => ({
+                name: basename(p),
+                value: p
             }))
         });
     }
@@ -124,10 +125,10 @@ class PrompterImpl implements PrompterAbstraction.Interface {
                 }
             });
             const trimmed = raw.trim();
-            const basename = trimmed.endsWith(options.extension)
+            const newBasename = trimmed.endsWith(options.extension)
                 ? trimmed
                 : `${trimmed}${options.extension}`;
-            path = join(DATA_DIR, basename);
+            path = this.paths.inDataDir(newBasename);
         }
         return path;
     }
@@ -148,5 +149,5 @@ class PrompterImpl implements PrompterAbstraction.Interface {
 
 export const Prompter = PrompterAbstraction.createImplementation({
     implementation: PrompterImpl,
-    dependencies: []
+    dependencies: [Paths]
 });

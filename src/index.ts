@@ -4,7 +4,7 @@ import { Download } from "~/features/Download/index.ts";
 import { Upload } from "~/features/Upload/index.ts";
 import { Logger } from "~/features/Logger/index.ts";
 import { Prompter } from "~/features/Prompter/index.ts";
-import { dataFilePath, extensionFor } from "~/lib/paths.ts";
+import { Paths } from "~/features/Paths/index.ts";
 
 const container = bootstrap();
 const logger = container.resolve(Logger);
@@ -12,6 +12,7 @@ const prompter = container.resolve(Prompter);
 const config = container.resolve(Config);
 const download = container.resolve(Download);
 const upload = container.resolve(Upload);
+const paths = container.resolve(Paths);
 
 const main = async (): Promise<void> => {
     const tables = await config.load();
@@ -28,8 +29,11 @@ const main = async (): Promise<void> => {
         });
         const segments = await prompter.segments();
         const format = await prompter.downloadFormat({ segments });
-        const initialPath = dataFilePath(table.description, format);
-        const destPath = await prompter.destPath({ initialPath, extension: extensionFor(format) });
+        const initialPath = paths.dataFilePath({ description: table.description, format });
+        const destPath = await prompter.destPath({
+            initialPath,
+            extension: paths.extensionFor(format)
+        });
         if (destPath === null) {
             return;
         }

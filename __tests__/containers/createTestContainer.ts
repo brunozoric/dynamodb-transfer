@@ -1,6 +1,7 @@
 import { Container } from "@webiny/di";
 import { Config, ConfigFeature } from "~/features/Config/index.ts";
 import { LoggerFeature } from "~/features/Logger/index.ts";
+import { PathsFeature } from "~/features/Paths/index.ts";
 import { PrompterFeature } from "~/features/Prompter/index.ts";
 import { AwsClientFeature } from "~/features/AwsClient/index.ts";
 import { DownloadFeature } from "~/features/Download/index.ts";
@@ -13,6 +14,7 @@ export interface TestContainerOptions {
 export function createTestContainer(options: TestContainerOptions = {}): Container {
   const container = new Container();
   LoggerFeature.register(container);
+  PathsFeature.register(container);
   PrompterFeature.register(container);
   ConfigFeature.register(container);
   AwsClientFeature.register(container);
