@@ -13,7 +13,7 @@ export interface TestContainerOptions {
 
 export function createTestContainer(options: TestContainerOptions = {}): Container {
   const container = new Container();
-  LoggerFeature.register(container);
+  LoggerFeature.register(container, { logLevel: "silent", json: false });
   PathsFeature.register(container);
   PrompterFeature.register(container);
   ConfigFeature.register(container);

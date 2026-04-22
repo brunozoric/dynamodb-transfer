@@ -9,7 +9,7 @@ import { UploadFeature } from "~/features/Upload/index.ts";
 
 export function bootstrap(): Container {
     const container = new Container();
-    LoggerFeature.register(container);
+    LoggerFeature.register(container, { logLevel: "info", json: false });
     PathsFeature.register(container);
     PrompterFeature.register(container);
     ConfigFeature.register(container);

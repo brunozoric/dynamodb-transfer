@@ -1,9 +1,19 @@
 import { createFeature } from "~/base/index.ts";
-import { Logger } from "./Logger.ts";
+import { Logger } from "./abstractions/index.ts";
+import { PinoLogger } from "./PinoLogger.ts";
 
-export const LoggerFeature = createFeature({
+export interface LoggerFeatureParams {
+    logLevel: "debug" | "info" | "warn" | "error" | "silent";
+    json: boolean;
+}
+
+export const LoggerFeature = createFeature<LoggerFeatureParams>({
     name: "Core/LoggerFeature",
-    register(container) {
-        container.register(Logger).inSingletonScope();
+    register(container, params) {
+        const logger = new PinoLogger({
+            logLevel: params.logLevel,
+            transport: params.json ? "json" : "pretty"
+        });
+        container.registerInstance(Logger, logger);
     }
 });

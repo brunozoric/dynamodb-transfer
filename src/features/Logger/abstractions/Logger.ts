@@ -1,9 +1,12 @@
 import { createAbstraction } from "~/base/index.ts";
 
 export interface ILogger {
-    info(message: string): void;
-    warn(message: string): void;
-    error(message: string): void;
+    debug(message: string, ...args: unknown[]): void;
+    info(message: string, ...args: unknown[]): void;
+    warn(message: string, ...args: unknown[]): void;
+    error(message: string, ...args: unknown[]): void;
+    fatal(message: string, ...args: unknown[]): void;
+    done(message: string): void;
 }
 
 export const Logger = createAbstraction<ILogger>("Core/Logger");
