@@ -39,7 +39,12 @@
         "isolatedModules": true,
         "noUncheckedSideEffectImports": true,
         "moduleDetection": "force",
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "allowImportingTsExtensions": true,
+        "paths": {
+            "~/*": ["./src/*"]
+        }
     },
+    "include": ["./src/**/*", "__tests__/**/*", "./types/**/*"],
     "exclude": ["node_modules"]
 }

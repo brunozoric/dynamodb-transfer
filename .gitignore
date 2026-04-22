@@ -4,11 +4,12 @@ data/**
 package.tgz
 .yarn/install-state.gz
 .claude
-config.ts
+/config.ts
 .DS_Store
 .idea
 .vscode
 *.log
+.log/
 *.tsbuildinfo
 dist
 coverage

@@ -1,56 +1,17 @@
-import { loadConfig } from "./config/load.js";
-import { runDownload } from "./commands/download.js";
-import { runSend } from "./commands/send.js";
-import { dataFilePath, extensionFor } from "./lib/paths.js";
-import { promptAction } from "./prompts/action.js";
-import { confirmSend } from "./prompts/confirmSend.js";
-import { promptDownloadFormat } from "./prompts/downloadFormat.js";
-import { resolveDestPath } from "./prompts/overwrite.js";
-import { promptSegments } from "./prompts/segments.js";
-import { promptSourceFile } from "./prompts/sourceFile.js";
-import { promptTable } from "./prompts/table.js";
+import { bootstrap } from "./bootstrap.ts";
+import { Cli } from "~/features/Cli/index.ts";
+import { Logger } from "~/features/Logger/index.ts";
 
-const main = async (): Promise<void> => {
-    const tables = await loadConfig();
-    const action = await promptAction();
-
-    if (action === "exit") return;
-
-    if (action === "download") {
-        const table = await promptTable(tables, "Which table do you want to download?");
-        const segments = await promptSegments();
-        const format = await promptDownloadFormat(segments);
-        const initialPath = dataFilePath(table.description, format);
-        const destPath = await resolveDestPath(initialPath, extensionFor(format));
-        if (destPath === null) return;
-        await runDownload(table, destPath, format, segments);
-        return;
-    }
-
-    // action === "send"
-    const writableTables = tables.filter(t => t.writable);
-    if (writableTables.length === 0) {
-        console.log(
-            "No writable tables in config.ts. Set `writable: true` on the table you want to send to."
-        );
-        return;
-    }
-    const sourcePath = await promptSourceFile();
-    if (sourcePath === null) {
-        console.log("No files in data/ to send.");
-        return;
-    }
-    const table = await promptTable(writableTables, "Which table should receive the data?");
-    await confirmSend(sourcePath, table);
-    await runSend(sourcePath, table);
-};
+const container = bootstrap();
+const cli = container.resolve(Cli);
+const logger = container.resolve(Logger);
 
 try {
-    await main();
+    await cli.run();
 } catch (err) {
     if (err instanceof Error && err.name === "ExitPromptError") {
         process.exit(0);
     }
-    console.error(err instanceof Error ? err.message : String(err));
+    logger.error(err instanceof Error ? err.message : String(err));
     process.exit(1);
 }

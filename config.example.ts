@@ -1,4 +1,4 @@
-import { defineConfig } from "./src/config/define.js";
+import { defineConfig } from "./src/features/Config/index.js";
 
 export default defineConfig({
   defaults: {
@@ -10,8 +10,8 @@ export default defineConfig({
     // exported filename (camelCased). Must be unique, non-empty, and ≤ 40
     // characters. `name` is the real DynamoDB table name. `writable` MUST
     // be set explicitly — tables with `writable: false` never appear in
-    // the Send destination list, so accidental writes to the wrong table
-    // are impossible.
+    // the Upload destination list, so accidental writes to the wrong
+    // table are impossible.
     { name: "my-table", description: "Production", writable: false }
 
     // Per-table awsProfile/region are optional; omit to inherit defaults.
