@@ -346,20 +346,25 @@ Variants:
 ```ts
 import { createAbstraction } from "~/base/createAbstraction.ts";
 
-interface IFeatureName {
-    doThing(x: string): Promise<void>;
+export interface IFeatureName {
+    doThing(options: IFeatureNameOptions): Promise<void>;
+}
+
+export interface IFeatureNameOptions {
+    level: number;
 }
 
 export const FeatureName = createAbstraction<IFeatureName>("Area/FeatureName");
 
+// The namespace is a facade — it only re-exports module-level types
+// with nice public names. No new declarations live inside the namespace.
 export namespace FeatureName {
-    // Consumers reach types via `FeatureName.Interface`, never via a
-    // bare `IFeatureName` import. Interface is ALWAYS the public type name.
     export type Interface = IFeatureName;
-    // Nested types live here too:
-    export interface Options { level: number }
+    export type Options = IFeatureNameOptions;
 }
 ```
+
+**Why interfaces are declared at module scope, not inside the namespace.** Under `isolatedModules: true` (and strict declaration emit), any type referenced by an exported value must itself be exportable. `createAbstraction<IFeatureName>(...)` returns `Abstraction<IFeatureName>`, and that type gets attached to the exported `FeatureName` const — so `IFeatureName` must be exported. The `I`-prefixed names are exported for TypeScript's sake; consumers still always reach them through the namespace (`FeatureName.Interface`, `FeatureName.Options`), so the public surface stays clean.
 
 #### `abstractions/index.ts`
 
@@ -432,9 +437,12 @@ export { FeatureNameFeature } from "./feature.ts";
 
 The `FeatureName` exported here is the **abstraction token**, imported from `./abstractions/index.ts`. The `createImplementation` result in `./FeatureName.ts` shares the same short name but is a different symbol; it is NEVER re-exported from this file. Consumers register features (not classes) and resolve / depend on abstractions (not impls).
 
-### What NOT to export
+### Convention for namespace vs module-level types
 
-- Bare `interface IFeatureName` — always accessed via `FeatureName.Interface`, no direct export.
+The `I`-prefixed interfaces (`IFeatureName`, `IFeatureNameOptions`) are exported at module scope but **consumers never import them directly**. They always go through the namespace: `FeatureName.Interface`, `FeatureName.Options`. Treat the `I`-prefixed names as implementation detail that's exported only because the TypeScript compiler needs it.
+
+### What NOT to export from the feature's public surface
+
 - Implementation classes (`FeatureNameImpl`) — stay inside the feature folder.
 - createImplementation outputs — the `const FeatureName = FeatureNameAbstraction.createImplementation(...)` in `./FeatureName.ts` is for `./feature.ts` only. Do not re-export it from the feature's `index.ts`.
 - `reflect-metadata` — imported by the library, never by user code.
@@ -545,22 +553,19 @@ Used by all tests that need a "real-ish" container without the full bootstrap.
 
 ## 10. Common anti-patterns (don't)
 
-### 1. Direct interface export from abstractions
+### 1. Consuming the `I`-prefixed interface directly
 
 ```ts
-// ✗ Bad
-export interface LoggerInterface { info(msg: string): void }
-export const Logger = createAbstraction<LoggerInterface>("Core/Logger");
+// ✗ Bad — imports the implementation-detail name
+import { ILogger } from "~/tools/Logger/abstractions/index.ts";
+function f(logger: ILogger) { ... }
 
-// ✓ Good — namespace merge
-interface ILogger { info(msg: string): void }
-export const Logger = createAbstraction<ILogger>("Core/Logger");
-export namespace Logger {
-    export type Interface = ILogger;
-}
+// ✓ Good — consumes the namespace facade
+import { Logger } from "~/tools/Logger/index.ts";
+function f(logger: Logger.Interface) { ... }
 ```
 
-Callers write `Logger.Interface` everywhere. One import, types + token together.
+`ILogger` is exported at module scope because TypeScript needs it to type the exported `Logger` const under `isolatedModules`. It isn't part of the feature's public surface. Callers always go through the `Logger.Interface` / `Logger.Options` namespace names — one import, types + token together, no drift.
 
 ### 2. Manual `import "reflect-metadata"`
 

@@ -2,16 +2,20 @@ import { createAbstraction } from "~/base/index.ts";
 import type { Config } from "~/features/Config/index.ts";
 import type { DownloadFormat } from "~/lib/paths.ts";
 
-export const Download = createAbstraction<Download.Interface>("Commands/Download");
+export interface IDownload {
+    run(options: IDownloadRunOptions): Promise<void>;
+}
+
+export interface IDownloadRunOptions {
+    table: Config.ResolvedTable;
+    destPath: string;
+    format: DownloadFormat;
+    segments: number;
+}
+
+export const Download = createAbstraction<IDownload>("Commands/Download");
 
 export namespace Download {
-    export interface Interface {
-        run(options: RunOptions): Promise<void>;
-    }
-    export interface RunOptions {
-        table: Config.ResolvedTable;
-        destPath: string;
-        format: DownloadFormat;
-        segments: number;
-    }
+    export type Interface = IDownload;
+    export type RunOptions = IDownloadRunOptions;
 }
