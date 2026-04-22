@@ -41,11 +41,10 @@
         "moduleDetection": "force",
         "skipLibCheck": true,
         "allowImportingTsExtensions": true,
-        "ignoreDeprecations": "6.0",
-        "baseUrl": ".",
         "paths": {
-            "~/*": ["src/*"]
+            "~/*": ["./src/*"]
         }
     },
+    "include": ["./src/**/*", "__tests__/**/*", "./types/**/*"],
     "exclude": ["node_modules"]
 }
