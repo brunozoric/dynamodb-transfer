@@ -1,27 +1,22 @@
-import { Container } from "@webiny/di";
-import { Config, ConfigFeature } from "~/features/Config/index.ts";
-import { AwsClientFeature } from "~/features/AwsClient/index.ts";
-import { Download, DownloadFeature } from "~/features/Download/index.ts";
-import { Upload, UploadFeature } from "~/features/Upload/index.ts";
-import { dataFilePath, extensionFor } from "./lib/paths.js";
-import { promptAction } from "./prompts/action.js";
-import { confirmUpload } from "./prompts/confirmUpload.js";
-import { promptDownloadFormat } from "./prompts/downloadFormat.js";
-import { resolveDestPath } from "./prompts/overwrite.js";
-import { promptSegments } from "./prompts/segments.js";
-import { promptSourceFile } from "./prompts/sourceFile.js";
-import { promptTable } from "./prompts/table.js";
-
-const container = new Container();
-ConfigFeature.register(container);
-AwsClientFeature.register(container);
-DownloadFeature.register(container);
-UploadFeature.register(container);
-const config = container.resolve(Config);
-const download = container.resolve(Download);
-const upload = container.resolve(Upload);
+import { bootstrap } from "./bootstrap.ts";
+import { Config } from "~/features/Config/index.ts";
+import { Download } from "~/features/Download/index.ts";
+import { Upload } from "~/features/Upload/index.ts";
+import { dataFilePath, extensionFor } from "~/lib/paths.ts";
+import { promptAction } from "~/prompts/action.ts";
+import { confirmUpload } from "~/prompts/confirmUpload.ts";
+import { promptDownloadFormat } from "~/prompts/downloadFormat.ts";
+import { resolveDestPath } from "~/prompts/overwrite.ts";
+import { promptSegments } from "~/prompts/segments.ts";
+import { promptSourceFile } from "~/prompts/sourceFile.ts";
+import { promptTable } from "~/prompts/table.ts";
 
 const main = async (): Promise<void> => {
+    const container = bootstrap();
+    const config = container.resolve(Config);
+    const download = container.resolve(Download);
+    const upload = container.resolve(Upload);
+
     const tables = await config.load();
     const action = await promptAction();
 
