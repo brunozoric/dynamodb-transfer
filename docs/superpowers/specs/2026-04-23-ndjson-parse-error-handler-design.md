@@ -79,11 +79,21 @@ Throws `options.error` — identical to the current behaviour when no hook is pr
 
 `sendJson` is unaffected — the whole file is parsed in one call, not line-by-line.
 
-### User-facing API (in `config.ts`)
+### Public barrel (`src/index.ts`)
+
+`src/index.ts` is the user-facing public API surface. It re-exports everything a user needs to write their `config.ts`:
 
 ```typescript
-import { defineConfig } from "./src/features/Config/index.js";
-import { ParseNdJsonErrorHandler } from "./src/features/ParseNdJsonErrorHandler/index.js";
+export { defineConfig } from "./features/Config/index.ts";
+export { ParseNdJsonErrorHandler } from "./features/ParseNdJsonErrorHandler/index.ts";
+```
+
+### User-facing API (in `config.ts`)
+
+Users import from `./src/index.js` only — no deep feature paths:
+
+```typescript
+import { defineConfig, ParseNdJsonErrorHandler } from "./src/index.js";
 
 class MyHandler {
     async handle({ table, line, error }) {
@@ -111,8 +121,7 @@ export default defineConfig(({ container }) => {
 |------|--------|
 | `src/features/Config/abstractions/Config.ts` | `defineConfig` → factory-only signature |
 | `src/bootstrap.ts` | async, awaits factory, registers static Config instance |
-| `src/cli.ts` | `await bootstrap()` |
-| `config.example.ts` | update to factory form |
+| `src/cli.ts` | `await bootstrap()`, wrap bootstrap in top-level catch |
 | `src/features/ParseNdJsonErrorHandler/abstractions/ParseNdJsonErrorHandler.ts` | new abstraction |
 | `src/features/ParseNdJsonErrorHandler/abstractions/index.ts` | re-exports |
 | `src/features/ParseNdJsonErrorHandler/ParseNdJsonErrorHandler.ts` | default impl (throws) |
@@ -121,6 +130,8 @@ export default defineConfig(({ container }) => {
 | `src/features/Upload/abstractions/Upload.ts` | no change (startFrom already there) |
 | `src/features/Upload/Upload.ts` | inject handler, async getParsed, pass table through sendNdjson |
 | `src/features/Upload/feature.ts` | add ParseNdJsonErrorHandler to dependencies |
+| `src/index.ts` | re-export `defineConfig` + `ParseNdJsonErrorHandler` for user consumption |
+| `config.example.ts` | import from `./src/index.js`, use factory form |
 
 ## Out of scope
 
