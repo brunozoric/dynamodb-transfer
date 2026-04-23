@@ -1,4 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { createInterface } from "node:readline";
+import { createReadStream } from "node:fs";
+import { join } from "node:path";
 import type { Logger } from "~/features/Logger/index.ts";
 import type { ParseNdJsonErrorHandler } from "~/features/ParseNdJsonErrorHandler/index.ts";
 import type { Config } from "~/features/Config/index.ts";
@@ -136,5 +139,49 @@ describe("NdJsonLineAccumulatorImpl", () => {
             await accumulator.flush(table);
             expect(handleMock).toHaveBeenCalledOnce();
         });
+    });
+});
+
+describe("NdJsonLineAccumulatorImpl — real-world partial file", () => {
+    it("produces 3 records from a file where lines 1-2 form a single JSON record", async () => {
+        const logger: Logger.Interface = {
+            debug: vi.fn(),
+            info: vi.fn(),
+            warn: vi.fn(),
+            error: vi.fn(),
+            fatal: vi.fn(),
+            done: vi.fn(),
+            attachFile: vi.fn()
+        };
+        const handleMock = vi.fn().mockResolvedValue(null);
+        const handler: ParseNdJsonErrorHandler.Interface = { handle: handleMock };
+        const accumulator = new NdJsonLineAccumulatorImpl(logger, handler);
+
+        const filePath = join(process.cwd(), "__tests__/data/partial.txt");
+        const rl = createInterface({
+            input: createReadStream(filePath),
+            crlfDelay: Infinity
+        });
+
+        const records: Record<string, unknown>[] = [];
+        for await (const line of rl) {
+            if (line.trim().length === 0) {
+                continue;
+            }
+            const parsed = await accumulator.feed(line, table);
+            if (parsed !== null) {
+                records.push(parsed);
+            }
+        }
+        const flushed = await accumulator.flush(table);
+        if (flushed !== null) {
+            records.push(flushed);
+        }
+
+        expect(records).toHaveLength(3);
+        expect(records[0]).toEqual({ correct: "yes" });
+        expect(records[1]).toHaveProperty("PK", "T#root#L#en-US#CMS#CME#wby-aco-6812738e05e2640008961dcb");
+        expect(records[2]).toEqual({ correctAgain: "yes" });
+        expect(handleMock).not.toHaveBeenCalled();
     });
 });
