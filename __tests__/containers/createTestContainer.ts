@@ -3,7 +3,7 @@ import { Config, ConfigFeature } from "~/features/Config/index.ts";
 import { LoggerFeature } from "~/features/Logger/index.ts";
 import { PathsFeature } from "~/features/Paths/index.ts";
 import { PrompterFeature } from "~/features/Prompter/index.ts";
-import { AwsClientFeature } from "~/features/AwsClient/index.ts";
+import { DynamoDbClientFeature } from "~/features/DynamoDbClient/index.ts";
 import { DownloadFeature } from "~/features/Download/index.ts";
 import { UploadFeature } from "~/features/Upload/index.ts";
 import { CliFeature } from "~/features/Cli/index.ts";
@@ -20,7 +20,7 @@ export function createTestContainer(options: TestContainerOptions = {}): Contain
   PathsFeature.register(container);
   PrompterFeature.register(container);
   ConfigFeature.register(container);
-  AwsClientFeature.register(container);
+  DynamoDbClientFeature.register(container);
   DownloadFeature.register(container);
   UploadFeature.register(container);
   ParseNdJsonErrorHandlerFeature.register(container);

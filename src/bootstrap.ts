@@ -4,7 +4,7 @@ import { PathsFeature } from "~/features/Paths/index.ts";
 import { PrompterFeature } from "~/features/Prompter/index.ts";
 import { Config, ConfigError, ConfigSchema } from "~/features/Config/index.ts";
 import type { ConfigFactory } from "~/features/Config/index.ts";
-import { AwsClientFeature } from "~/features/AwsClient/index.ts";
+import { DynamoDbClientFeature } from "~/features/DynamoDbClient/index.ts";
 import { DownloadFeature } from "~/features/Download/index.ts";
 import { UploadFeature } from "~/features/Upload/index.ts";
 import { ParseNdJsonErrorHandlerFeature } from "~/features/ParseNdJsonErrorHandler/index.ts";
@@ -17,7 +17,7 @@ export async function bootstrap(): Promise<Container> {
     LoggerFeature.register(container, readLoggerParamsFromEnv(process.env));
     PathsFeature.register(container);
     PrompterFeature.register(container);
-    AwsClientFeature.register(container);
+    DynamoDbClientFeature.register(container);
     DownloadFeature.register(container);
     UploadFeature.register(container);
     ParseNdJsonErrorHandlerFeature.register(container);

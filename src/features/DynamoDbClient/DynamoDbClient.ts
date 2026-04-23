@@ -1,5 +1,5 @@
 import { BatchWriteCommand, DynamoDBDocumentClient, ScanCommand } from "@aws-sdk/lib-dynamodb";
-import { SourceDynamoDbClient } from "./abstractions/DynamoDbClient.ts";
+import { DynamoDbClient } from "./abstractions/DynamoDbClient.ts";
 import type { DynamoDbClientConfig } from "./abstractions/DynamoDbClientConfig.ts";
 import { isRetryableAwsError, retryBackoffMs } from "~/base/index.ts";
 import type { Logger } from "~/features/Logger/index.ts";
@@ -8,7 +8,7 @@ const BATCH_SIZE = 25;
 const DEFAULT_MAX_RETRIES = 6;
 const DEFAULT_INITIAL_BACKOFF = 100;
 
-export class DynamoDbClientImpl implements SourceDynamoDbClient.Interface {
+export class DynamoDbClientImpl implements DynamoDbClient.Interface {
     private readonly maxRetries: number;
     private readonly initialBackoff: number;
 
@@ -21,9 +21,9 @@ export class DynamoDbClientImpl implements SourceDynamoDbClient.Interface {
         this.initialBackoff = tuning?.initialBackoffMs ?? DEFAULT_INITIAL_BACKOFF;
     }
 
-    public async *scan<T extends SourceDynamoDbClient.Record = SourceDynamoDbClient.Record>(
+    public async *scan<T extends DynamoDbClient.Record = DynamoDbClient.Record>(
         tableName: string,
-        options?: SourceDynamoDbClient.Scan
+        options?: DynamoDbClient.Scan
     ): AsyncIterable<T> {
         let lastEvaluatedKey: Record<string, unknown> | undefined;
 
@@ -47,7 +47,7 @@ export class DynamoDbClientImpl implements SourceDynamoDbClient.Interface {
         } while (lastEvaluatedKey);
     }
 
-    public async batchPut<T extends SourceDynamoDbClient.Record>(
+    public async batchPut<T extends DynamoDbClient.Record>(
         tableName: string,
         records: T[]
     ): Promise<void> {

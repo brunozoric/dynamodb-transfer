@@ -19,16 +19,9 @@ export interface IDynamoDbClient {
     batchPut<T extends DatabaseRecord>(tableName: string, records: T[]): Promise<void>;
 }
 
-export const SourceDynamoDbClient = createAbstraction<IDynamoDbClient>("Core/SourceDynamoDbClient");
-export const TargetDynamoDbClient = createAbstraction<IDynamoDbClient>("Core/TargetDynamoDbClient");
+export const DynamoDbClient = createAbstraction<IDynamoDbClient>("Core/DynamoDbClient");
 
-export namespace SourceDynamoDbClient {
-    export type Interface = IDynamoDbClient;
-    export type Record = DatabaseRecord;
-    export type Scan = ScanOptions;
-}
-
-export namespace TargetDynamoDbClient {
+export namespace DynamoDbClient {
     export type Interface = IDynamoDbClient;
     export type Record = DatabaseRecord;
     export type Scan = ScanOptions;

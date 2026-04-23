@@ -1,25 +1,24 @@
 import { createWriteStream, writeFileSync } from "node:fs";
 import type { WriteStream } from "node:fs";
-import { ClientFactory } from "~/features/AwsClient/index.ts";
 import { Logger } from "~/features/Logger/index.ts";
-import { DynamoDbClientImpl } from "~/features/DynamoDbClient/DynamoDbClient.ts";
-import type { SourceDynamoDbClient } from "~/features/DynamoDbClient/index.ts";
+import { DynamoDbClientFactory } from "~/features/DynamoDbClient/index.ts";
+import type { DynamoDbClient } from "~/features/DynamoDbClient/index.ts";
 import { Download as DownloadAbstraction } from "./abstractions/index.ts";
 
 class DownloadImpl implements DownloadAbstraction.Interface {
     public constructor(
         private readonly logger: Logger.Interface,
-        private readonly clientFactory: ClientFactory.Interface
+        private readonly clientFactory: DynamoDbClientFactory.Interface
     ) {}
 
     public async run(options: DownloadAbstraction.RunOptions): Promise<void> {
         const { table, destPath, format, segments } = options;
-        const dynamoClient = new DynamoDbClientImpl(this.clientFactory.create(table), this.logger);
+        const client = this.clientFactory.create(table);
         try {
             if (format === "ndjson") {
-                await this.downloadNdjson(dynamoClient, table.name, destPath, segments);
+                await this.downloadNdjson(client, table.name, destPath, segments);
             } else {
-                await this.downloadJson(dynamoClient, table.name, destPath);
+                await this.downloadJson(client, table.name, destPath);
             }
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
@@ -28,7 +27,7 @@ class DownloadImpl implements DownloadAbstraction.Interface {
     }
 
     private async downloadJson(
-        client: SourceDynamoDbClient.Interface,
+        client: DynamoDbClient.Interface,
         tableName: string,
         destPath: string
     ): Promise<void> {
@@ -44,7 +43,7 @@ class DownloadImpl implements DownloadAbstraction.Interface {
     }
 
     private async downloadNdjson(
-        client: SourceDynamoDbClient.Interface,
+        client: DynamoDbClient.Interface,
         tableName: string,
         destPath: string,
         segments: number
@@ -114,5 +113,5 @@ class DownloadImpl implements DownloadAbstraction.Interface {
 
 export const Download = DownloadAbstraction.createImplementation({
     implementation: DownloadImpl,
-    dependencies: [Logger, ClientFactory]
+    dependencies: [Logger, DynamoDbClientFactory]
 });

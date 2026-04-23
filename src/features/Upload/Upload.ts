@@ -1,22 +1,20 @@
-import type { BatchWriteCommandInput, BatchWriteCommandOutput } from "@aws-sdk/lib-dynamodb";
-import { BatchWriteCommand } from "@aws-sdk/lib-dynamodb";
 import { createReadStream, readFileSync } from "node:fs";
 import { createInterface } from "node:readline";
-import { ClientFactory } from "~/features/AwsClient/index.ts";
 import { Logger } from "~/features/Logger/index.ts";
 import { Paths } from "~/features/Paths/index.ts";
+import { DynamoDbClientFactory } from "~/features/DynamoDbClient/index.ts";
+import type { DynamoDbClient } from "~/features/DynamoDbClient/index.ts";
 import { NdJsonLineAccumulator } from "~/features/NdJsonLineAccumulator/index.ts";
 import type { Config } from "~/features/Config/index.ts";
 import { Upload as UploadAbstraction } from "./abstractions/index.ts";
 
 const CHUNK_SIZE = 25;
-const BACKOFF_MS = 500;
 
 class UploadImpl implements UploadAbstraction.Interface {
     public constructor(
         private readonly logger: Logger.Interface,
         private readonly paths: Paths.Interface,
-        private readonly clientFactory: ClientFactory.Interface,
+        private readonly clientFactory: DynamoDbClientFactory.Interface,
         private readonly accumulator: NdJsonLineAccumulator.Interface
     ) {}
 
@@ -39,7 +37,7 @@ class UploadImpl implements UploadAbstraction.Interface {
     }
 
     private async sendJson(
-        client: ClientFactory.Client,
+        client: DynamoDbClient.Interface,
         tableName: string,
         sourcePath: string,
         startFrom: number
@@ -47,8 +45,8 @@ class UploadImpl implements UploadAbstraction.Interface {
         const items = JSON.parse(readFileSync(sourcePath, "utf-8")) as Record<string, unknown>[];
         let written = startFrom;
         for (let i = startFrom; i < items.length; i += CHUNK_SIZE) {
-            const chunk = items.slice(i, i + CHUNK_SIZE);
-            await this.sendChunk(client, tableName, chunk);
+            const chunk = items.slice(i, i + CHUNK_SIZE) as DynamoDbClient.Record[];
+            await client.batchPut(tableName, chunk);
             written += chunk.length;
             this.logger.info(`Written ${written}/${items.length}`);
         }
@@ -56,7 +54,7 @@ class UploadImpl implements UploadAbstraction.Interface {
     }
 
     private async sendNdjson(
-        client: ClientFactory.Client,
+        client: DynamoDbClient.Interface,
         table: Config.ResolvedTable,
         sourcePath: string,
         startFrom: number
@@ -66,7 +64,7 @@ class UploadImpl implements UploadAbstraction.Interface {
             crlfDelay: Infinity
         });
 
-        let buffer: Record<string, unknown>[] = [];
+        let buffer: DynamoDbClient.Record[] = [];
         let written = 0;
         let lineIndex = 0;
         for await (const line of rl) {
@@ -80,9 +78,9 @@ class UploadImpl implements UploadAbstraction.Interface {
             if (parsed === null) {
                 continue;
             }
-            buffer.push(parsed);
+            buffer.push(parsed as DynamoDbClient.Record);
             if (buffer.length >= CHUNK_SIZE) {
-                await this.sendChunk(client, table.name, buffer);
+                await client.batchPut(table.name, buffer);
                 written += buffer.length;
                 this.logger.info(`Written ${startFrom + written} items...`);
                 buffer = [];
@@ -90,40 +88,17 @@ class UploadImpl implements UploadAbstraction.Interface {
         }
         const flushed = await this.accumulator.flush(table);
         if (flushed !== null) {
-            buffer.push(flushed);
+            buffer.push(flushed as DynamoDbClient.Record);
         }
         if (buffer.length > 0) {
-            await this.sendChunk(client, table.name, buffer);
+            await client.batchPut(table.name, buffer);
             written += buffer.length;
         }
         this.logger.done(`Wrote ${written} items to ${table.name}`);
-    }
-
-    private async sendChunk(
-        client: ClientFactory.Client,
-        tableName: string,
-        chunk: Record<string, unknown>[]
-    ): Promise<void> {
-        let unprocessed: BatchWriteCommandInput["RequestItems"] = {
-            [tableName]: chunk.map(Item => ({ PutRequest: { Item } }))
-        };
-        while (unprocessed !== undefined && Object.keys(unprocessed).length > 0) {
-            const requestItems: BatchWriteCommandInput["RequestItems"] = unprocessed;
-            const result: BatchWriteCommandOutput = await client.send(
-                new BatchWriteCommand({ RequestItems: requestItems })
-            );
-            unprocessed =
-                result.UnprocessedItems && Object.keys(result.UnprocessedItems).length > 0
-                    ? result.UnprocessedItems
-                    : undefined;
-            if (unprocessed) {
-                await new Promise(r => setTimeout(r, BACKOFF_MS));
-            }
-        }
     }
 }
 
 export const Upload = UploadAbstraction.createImplementation({
     implementation: UploadImpl,
-    dependencies: [Logger, Paths, ClientFactory, NdJsonLineAccumulator]
+    dependencies: [Logger, Paths, DynamoDbClientFactory, NdJsonLineAccumulator]
 });

@@ -1,6 +1,6 @@
 export {
-    SourceDynamoDbClient,
+    DynamoDbClient,
     DynamoDbClientConfig,
-    TargetDynamoDbClient
+    DynamoDbClientFactory
 } from "./abstractions/index.ts";
 export { DynamoDbClientFeature } from "./feature.ts";
