@@ -1,7 +1,7 @@
 import { bootstrap } from "./bootstrap.ts";
 import { Cli } from "~/features/Cli/index.ts";
 import { Logger } from "~/features/Logger/index.ts";
-import createExtensions from "@extensions/index.ts"
+import createExtensions from "@extensions/index.ts";
 
 let container: Awaited<ReturnType<typeof bootstrap>>;
 

@@ -43,7 +43,7 @@
         "allowImportingTsExtensions": true,
         "paths": {
             "~/*": ["./src/*"],
-            "@extensions/*": ["./extensions/*"],
+            "@extensions/*": ["./extensions/*"]
         }
     },
     "include": ["./src/**/*", "./extensions/**/*", "__tests__/**/*", "./types/**/*"],

@@ -11,7 +11,7 @@
     "ts-check": "tsc --noEmit",
     "test": "vitest run --coverage",
     "test:watch": "vitest",
-    "format:fix": "oxfmt 'src/**/*.{ts,js}' '__tests__/**/*.ts' 'vitest.config.ts' '.adiorc.js' 'setup-yarnrc.js' 'tsconfig.json' 'config.**'",
+    "format:fix": "oxfmt 'src/**/*.{ts,js}' 'extensions/**/*.{ts,js}' '__tests__/**/*.ts' 'vitest.config.ts' '.adiorc.js' 'setup-yarnrc.js' 'tsconfig.json' 'config.**'",
     "format:check": "oxfmt --check",
     "postinstall": "yarn set version berry"
   },

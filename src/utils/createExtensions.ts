@@ -1,4 +1,4 @@
-import type {Container} from "@webiny/di";
+import type { Container } from "@webiny/di";
 
 export interface ICreateExtensionsParams {
     container: Container;
@@ -9,5 +9,5 @@ export interface ICreateExtensionsCb {
 }
 
 export const createExtensions = (cb: ICreateExtensionsCb) => {
-    return cb
-}
+    return cb;
+};
