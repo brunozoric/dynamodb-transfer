@@ -40,7 +40,7 @@ export function defineConfig(factory: ConfigFactory): ConfigFactory {
 container.registerInstance(Config, { load: async () => resolvedTables });
 ```
 
-`src/index.ts` changes to `const container = await bootstrap()`. Bootstrap errors (invalid config, factory throw) must be caught in `index.ts` — the existing try-catch only wraps `cli.run()`, so a top-level catch is needed.
+`src/cli.ts` changes to `const container = await bootstrap()`. Bootstrap errors (invalid config, factory throw) must be caught in `index.ts` — the existing try-catch only wraps `cli.run()`, so a top-level catch is needed.
 
 `config.example.ts` is updated to the factory form.
 
@@ -111,7 +111,7 @@ export default defineConfig(({ container }) => {
 |------|--------|
 | `src/features/Config/abstractions/Config.ts` | `defineConfig` → factory-only signature |
 | `src/bootstrap.ts` | async, awaits factory, registers static Config instance |
-| `src/index.ts` | `await bootstrap()` |
+| `src/cli.ts` | `await bootstrap()` |
 | `config.example.ts` | update to factory form |
 | `src/features/ParseNdJsonErrorHandler/abstractions/ParseNdJsonErrorHandler.ts` | new abstraction |
 | `src/features/ParseNdJsonErrorHandler/abstractions/index.ts` | re-exports |
