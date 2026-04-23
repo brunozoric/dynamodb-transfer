@@ -1,14 +1,15 @@
-import { BatchWriteCommand } from "@aws-sdk/lib-dynamodb";
-import type { BatchWriteCommandInput, BatchWriteCommandOutput } from "@aws-sdk/lib-dynamodb";
-import { createReadStream, readFileSync } from "node:fs";
-import { createInterface } from "node:readline";
-import { ClientFactory } from "~/features/AwsClient/index.ts";
-import { Logger } from "~/features/Logger/index.ts";
-import { Paths } from "~/features/Paths/index.ts";
-import { Upload as UploadAbstraction } from "./abstractions/index.ts";
+import type {BatchWriteCommandInput, BatchWriteCommandOutput} from "@aws-sdk/lib-dynamodb";
+import {BatchWriteCommand} from "@aws-sdk/lib-dynamodb";
+import {createReadStream, readFileSync} from "node:fs";
+import {createInterface} from "node:readline";
+import {ClientFactory} from "~/features/AwsClient/index.ts";
+import {Logger} from "~/features/Logger/index.ts";
+import {Paths} from "~/features/Paths/index.ts";
+import {Upload as UploadAbstraction} from "./abstractions/index.ts";
 
 const CHUNK_SIZE = 25;
 const BACKOFF_MS = 500;
+
 
 class UploadImpl implements UploadAbstraction.Interface {
     public constructor(
@@ -67,7 +68,7 @@ class UploadImpl implements UploadAbstraction.Interface {
             if (line.trim().length === 0) {
                 continue;
             }
-            buffer.push(JSON.parse(line) as Record<string, unknown>);
+            buffer.push(this.getParsed(line));
             if (buffer.length >= CHUNK_SIZE) {
                 await this.sendChunk(client, tableName, buffer);
                 written += buffer.length;
@@ -102,6 +103,15 @@ class UploadImpl implements UploadAbstraction.Interface {
             if (unprocessed) {
                 await new Promise(r => setTimeout(r, BACKOFF_MS));
             }
+        }
+    }
+    
+    private getParsed (input: string)  {
+        try {
+            return JSON.parse(input) as Record<string, unknown>
+        } catch(ex) {
+            this.logger.debug(`Failed to parse line as JSON: ${input}`);
+            throw ex;
         }
     }
 }
