@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { Upload } from "~/features/Upload/index.ts";
 import type { Config } from "~/features/Config/index.ts";
+import { ParseNdJsonErrorHandler } from "~/features/ParseNdJsonErrorHandler/index.ts";
 import { createTestContainer } from "../containers/createTestContainer.ts";
 import { createTestTable, dropTestTable, scanAllItems } from "../helpers/dynaliteTables.ts";
 
@@ -154,5 +155,55 @@ describe("Upload", () => {
     const scanned = await scanAllItems(tableName);
     expect(scanned).toHaveLength(1);
     expect(scanned[0]?.PK).toBe("c");
+  });
+
+  it("skips an unparseable NDJSON line when handler returns null", async () => {
+    const tableName = await createTestTable();
+    tablesToClean.push(tableName);
+    const dir = makeTmpDir();
+    dirsToClean.push(dir);
+    const sourcePath = join(dir, "data.ndjson");
+    writeFileSync(
+      sourcePath,
+      [
+        JSON.stringify({ PK: "a", value: 1 }),
+        "not-valid-json",
+        JSON.stringify({ PK: "b", value: 2 })
+      ].join("\n") + "\n"
+    );
+
+    const container = createTestContainer();
+    container.registerInstance(ParseNdJsonErrorHandler, {
+      handle: async () => null
+    });
+    const upload = container.resolve(Upload);
+    await upload.run({ sourcePath, table: makeTable(tableName), startFrom: 0 });
+
+    const scanned = await scanAllItems(tableName);
+    expect(scanned).toHaveLength(2);
+    expect(scanned.map(s => s.PK).sort()).toEqual(["a", "b"]);
+  });
+
+  it("substitutes an unparseable NDJSON line when handler returns an object", async () => {
+    const tableName = await createTestTable();
+    tablesToClean.push(tableName);
+    const dir = makeTmpDir();
+    dirsToClean.push(dir);
+    const sourcePath = join(dir, "data.ndjson");
+    writeFileSync(
+      sourcePath,
+      [JSON.stringify({ PK: "a", value: 1 }), "not-valid-json"].join("\n") + "\n"
+    );
+
+    const container = createTestContainer();
+    container.registerInstance(ParseNdJsonErrorHandler, {
+      handle: async () => ({ PK: "fallback", value: 0 })
+    });
+    const upload = container.resolve(Upload);
+    await upload.run({ sourcePath, table: makeTable(tableName), startFrom: 0 });
+
+    const scanned = await scanAllItems(tableName);
+    expect(scanned).toHaveLength(2);
+    expect(scanned.map(s => s.PK).sort()).toEqual(["a", "fallback"]);
   });
 });
