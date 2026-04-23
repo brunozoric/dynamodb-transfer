@@ -1,8 +1,9 @@
-import { ScanCommand } from "@aws-sdk/lib-dynamodb";
 import { createWriteStream, writeFileSync } from "node:fs";
 import type { WriteStream } from "node:fs";
 import { ClientFactory } from "~/features/AwsClient/index.ts";
 import { Logger } from "~/features/Logger/index.ts";
+import { DynamoDbClientImpl } from "~/features/DynamoDbClient/DynamoDbClient.ts";
+import type { SourceDynamoDbClient } from "~/features/DynamoDbClient/index.ts";
 import { Download as DownloadAbstraction } from "./abstractions/index.ts";
 
 class DownloadImpl implements DownloadAbstraction.Interface {
@@ -13,12 +14,12 @@ class DownloadImpl implements DownloadAbstraction.Interface {
 
     public async run(options: DownloadAbstraction.RunOptions): Promise<void> {
         const { table, destPath, format, segments } = options;
-        const client = this.clientFactory.create(table);
+        const dynamoClient = new DynamoDbClientImpl(this.clientFactory.create(table), this.logger);
         try {
             if (format === "ndjson") {
-                await this.downloadNdjson(client, table.name, destPath, segments);
+                await this.downloadNdjson(dynamoClient, table.name, destPath, segments);
             } else {
-                await this.downloadJson(client, table.name, destPath);
+                await this.downloadJson(dynamoClient, table.name, destPath);
             }
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
@@ -27,27 +28,23 @@ class DownloadImpl implements DownloadAbstraction.Interface {
     }
 
     private async downloadJson(
-        client: ClientFactory.Client,
+        client: SourceDynamoDbClient.Interface,
         tableName: string,
         destPath: string
     ): Promise<void> {
         const items: Record<string, unknown>[] = [];
-        let ExclusiveStartKey: Record<string, unknown> | undefined;
-        do {
-            const result = await client.send(
-                new ScanCommand({ TableName: tableName, ExclusiveStartKey })
-            );
-            items.push(...(result.Items ?? []));
-            ExclusiveStartKey = result.LastEvaluatedKey;
-            this.logger.info(`Scanned ${items.length} items...`);
-        } while (ExclusiveStartKey);
-
+        for await (const item of client.scan(tableName)) {
+            items.push(item);
+            if (items.length % 1000 === 0) {
+                this.logger.info(`Scanned ${items.length} items...`);
+            }
+        }
         writeFileSync(destPath, JSON.stringify(items, null, 2));
         this.logger.done(`Exported ${items.length} items to ${destPath}`);
     }
 
     private async downloadNdjson(
-        client: ClientFactory.Client,
+        client: SourceDynamoDbClient.Interface,
         tableName: string,
         destPath: string,
         segments: number
@@ -57,29 +54,21 @@ class DownloadImpl implements DownloadAbstraction.Interface {
 
         const worker = async (segment: number): Promise<void> => {
             let segmentCount = 0;
-            let ExclusiveStartKey: Record<string, unknown> | undefined;
-            do {
-                const result = await client.send(
-                    new ScanCommand({
-                        TableName: tableName,
-                        Segment: segment,
-                        TotalSegments: segments,
-                        ExclusiveStartKey
-                    })
-                );
-                for (const item of result.Items ?? []) {
-                    await this.writeLine(stream, JSON.stringify(item) + "\n");
+            for await (const item of client.scan(tableName, {
+                segment,
+                totalSegments: segments
+            })) {
+                await this.writeLine(stream, JSON.stringify(item) + "\n");
+                segmentCount++;
+                total++;
+                if (segmentCount % 1000 === 0) {
+                    this.logger.info(
+                        segments > 1
+                            ? `Seg ${segment}: ${segmentCount} items (total ${total})`
+                            : `Scanned ${total} items...`
+                    );
                 }
-                const batchCount = result.Items?.length ?? 0;
-                segmentCount += batchCount;
-                total += batchCount;
-                ExclusiveStartKey = result.LastEvaluatedKey;
-                this.logger.info(
-                    segments > 1
-                        ? `Seg ${segment}: ${segmentCount} items (total ${total})`
-                        : `Scanned ${total} items...`
-                );
-            } while (ExclusiveStartKey);
+            }
         };
 
         try {
