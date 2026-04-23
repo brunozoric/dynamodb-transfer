@@ -123,6 +123,13 @@ describe("NdJsonLineAccumulatorImpl", () => {
             expect(call.table).toBe(table);
         });
 
+        it("returns the handler result so callers can use it as a substitute record", async () => {
+            handleMock.mockResolvedValue({ pk: "substitute" });
+            await accumulator.feed("{bad", table);
+            const result = await accumulator.flush(table);
+            expect(result).toEqual({ pk: "substitute" });
+        });
+
         it("clears pending after flush", async () => {
             await accumulator.feed("{bad", table);
             await accumulator.flush(table);

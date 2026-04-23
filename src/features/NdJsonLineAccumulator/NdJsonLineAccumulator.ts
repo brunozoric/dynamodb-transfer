@@ -63,13 +63,13 @@ export class NdJsonLineAccumulatorImpl
         }
     }
 
-    public async flush(table: Config.ResolvedTable): Promise<void> {
+    public async flush(table: Config.ResolvedTable): Promise<Record<string, unknown> | null> {
         if (this.pending.length === 0) {
-            return;
+            return null;
         }
         const discarded = this.pending.join("\n");
         this.pending = [];
-        await this.handler.handle({
+        return this.handler.handle({
             table,
             line: discarded,
             error: new Error("Unexpected end of file while accumulating lines")

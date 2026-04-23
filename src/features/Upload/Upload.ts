@@ -5,7 +5,7 @@ import { createInterface } from "node:readline";
 import { ClientFactory } from "~/features/AwsClient/index.ts";
 import { Logger } from "~/features/Logger/index.ts";
 import { Paths } from "~/features/Paths/index.ts";
-import { ParseNdJsonErrorHandler } from "~/features/ParseNdJsonErrorHandler/index.ts";
+import { NdJsonLineAccumulator } from "~/features/NdJsonLineAccumulator/index.ts";
 import type { Config } from "~/features/Config/index.ts";
 import { Upload as UploadAbstraction } from "./abstractions/index.ts";
 
@@ -17,7 +17,7 @@ class UploadImpl implements UploadAbstraction.Interface {
         private readonly logger: Logger.Interface,
         private readonly paths: Paths.Interface,
         private readonly clientFactory: ClientFactory.Interface,
-        private readonly handler: ParseNdJsonErrorHandler.Interface
+        private readonly accumulator: NdJsonLineAccumulator.Interface
     ) {}
 
     public async run(options: UploadAbstraction.RunOptions): Promise<void> {
@@ -76,7 +76,7 @@ class UploadImpl implements UploadAbstraction.Interface {
             if (lineIndex++ < startFrom) {
                 continue;
             }
-            const parsed = await this.getParsed(line, table);
+            const parsed = await this.accumulator.feed(line, table);
             if (parsed === null) {
                 continue;
             }
@@ -87,6 +87,10 @@ class UploadImpl implements UploadAbstraction.Interface {
                 this.logger.info(`Written ${startFrom + written} items...`);
                 buffer = [];
             }
+        }
+        const flushed = await this.accumulator.flush(table);
+        if (flushed !== null) {
+            buffer.push(flushed);
         }
         if (buffer.length > 0) {
             await this.sendChunk(client, table.name, buffer);
@@ -117,21 +121,9 @@ class UploadImpl implements UploadAbstraction.Interface {
             }
         }
     }
-
-    private async getParsed(
-        line: string,
-        table: Config.ResolvedTable
-    ): Promise<Record<string, unknown> | null> {
-        try {
-            return JSON.parse(line) as Record<string, unknown>;
-        } catch (error) {
-            this.logger.debug(`Failed to parse line as JSON: ${line}`);
-            return this.handler.handle({ table, line, error });
-        }
-    }
 }
 
 export const Upload = UploadAbstraction.createImplementation({
     implementation: UploadImpl,
-    dependencies: [Logger, Paths, ClientFactory, ParseNdJsonErrorHandler]
+    dependencies: [Logger, Paths, ClientFactory, NdJsonLineAccumulator]
 });

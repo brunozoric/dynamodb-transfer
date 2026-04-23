@@ -8,6 +8,7 @@ import { DownloadFeature } from "~/features/Download/index.ts";
 import { UploadFeature } from "~/features/Upload/index.ts";
 import { CliFeature } from "~/features/Cli/index.ts";
 import { ParseNdJsonErrorHandlerFeature } from "~/features/ParseNdJsonErrorHandler/index.ts";
+import { NdJsonLineAccumulatorFeature } from "~/features/NdJsonLineAccumulator/index.ts";
 
 export interface TestContainerOptions {
   tables?: Config.ResolvedTable[];
@@ -23,6 +24,7 @@ export function createTestContainer(options: TestContainerOptions = {}): Contain
   DownloadFeature.register(container);
   UploadFeature.register(container);
   ParseNdJsonErrorHandlerFeature.register(container);
+  NdJsonLineAccumulatorFeature.register(container);
   CliFeature.register(container);
   if (options.tables) {
     container.registerInstance(Config, makeFakeConfig(options.tables));
