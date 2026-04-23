@@ -8,7 +8,7 @@ import { Logger as LoggerAbstraction } from "~/features/Logger/index.ts";
 import { DynamoDbClientFactory as DynamoDbClientFactoryAbstraction } from "./abstractions/DynamoDbClientFactory.ts";
 import { DynamoDbClientImpl } from "./DynamoDbClient.ts";
 
-function buildCredentialProvider(awsProfile: string): AwsCredentialIdentityProvider {
+function resolveCredentials(awsProfile: string): AwsCredentialIdentityProvider {
     if (process.env.AWS_ENDPOINT_URL_DYNAMODB !== undefined) {
         return fromEnv();
     }
@@ -22,7 +22,7 @@ class DynamoDbClientFactoryImpl implements DynamoDbClientFactoryAbstraction.Inte
         const documentClient = DynamoDBDocumentClient.from(
             new DynamoDBClient({
                 region: table.region,
-                credentials: buildCredentialProvider(table.awsProfile)
+                credentials: resolveCredentials(table.awsProfile)
             })
         );
         return new DynamoDbClientImpl(documentClient, this.logger);
