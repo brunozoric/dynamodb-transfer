@@ -29,6 +29,7 @@ export class NdJsonLineAccumulatorImpl implements NdJsonLineAccumulatorAbstracti
             const combined = [...this.pending, line].join("\n");
             const record = JSON.parse(combined) as Record<string, unknown>;
             this.pending = [];
+            this.logger.debug(`Newline-joined accumulation parsed successfully`);
             return record;
         } catch (_error) {
             this.logger.debug(
@@ -40,6 +41,7 @@ export class NdJsonLineAccumulatorImpl implements NdJsonLineAccumulatorAbstracti
             const combined = [...this.pending, line].join("");
             const record = JSON.parse(combined) as Record<string, unknown>;
             this.pending = [];
+            this.logger.debug(`Empty-string-joined accumulation parsed successfully`);
             return record;
         } catch (_error) {
             this.logger.debug(`Empty-string-joined accumulation did not parse, trying line alone`);
@@ -58,8 +60,14 @@ export class NdJsonLineAccumulatorImpl implements NdJsonLineAccumulatorAbstracti
                 line: discarded,
                 error: new Error("Accumulated lines could not form valid JSON")
             });
+            this.logger.debug(
+                `Line parsed successfully after discarding ${discardCount} accumulated line(s)`
+            );
             return record;
         } catch (_error) {
+            this.logger.debug(
+                `All strategies failed, continuing to accumulate (${this.pending.length + 1} lines pending)`
+            );
             this.pending.push(line);
             return null;
         }
