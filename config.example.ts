@@ -1,4 +1,4 @@
-import { defineConfig } from "./src/index.js";
+import { defineConfig } from "~/index.ts";
 
 export default defineConfig(async ({ container }) => {
   // Register custom services here. Example:
