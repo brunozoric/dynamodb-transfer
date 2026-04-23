@@ -11,6 +11,7 @@ export interface ScriptedPrompterSpec {
   destPath?: (options: Prompter.DestPathOptions) => Promise<string | null>;
   confirmUpload?: (options: Prompter.ConfirmUploadOptions) => Promise<void>;
   logToFile?: () => Promise<boolean>;
+  startFrom?: () => Promise<number>;
 }
 
 function scriptedMethod<TArgs extends unknown[], TResult>(
@@ -34,6 +35,7 @@ export function createScriptedPrompter(spec: ScriptedPrompterSpec): Prompter.Int
     sourceFile: scriptedMethod("sourceFile", spec.sourceFile),
     destPath: scriptedMethod("destPath", spec.destPath),
     confirmUpload: scriptedMethod("confirmUpload", spec.confirmUpload),
-    logToFile: scriptedMethod("logToFile", spec.logToFile)
+    logToFile: scriptedMethod("logToFile", spec.logToFile),
+    startFrom: scriptedMethod("startFrom", spec.startFrom)
   };
 }

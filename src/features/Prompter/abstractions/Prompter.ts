@@ -13,6 +13,7 @@ export interface IPrompter {
     destPath(options: IDestPathOptions): Promise<string | null>;
     confirmUpload(options: IConfirmUploadOptions): Promise<void>;
     logToFile(): Promise<boolean>;
+    startFrom(): Promise<number>;
 }
 
 export interface ITableOptions {
@@ -32,6 +33,8 @@ export interface IDestPathOptions {
 export interface IConfirmUploadOptions {
     sourcePath: string;
     table: Config.ResolvedTable;
+    startFrom: number;
+    format: Paths.DownloadFormat | null;
 }
 
 export const Prompter = createAbstraction<IPrompter>("Ui/Prompter");
