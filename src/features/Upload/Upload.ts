@@ -19,14 +19,14 @@ class UploadImpl implements UploadAbstraction.Interface {
     ) {}
 
     public async run(options: UploadAbstraction.RunOptions): Promise<void> {
-        const { sourcePath, table } = options;
+        const { sourcePath, table, startFrom } = options;
         const client = this.clientFactory.create(table);
         const format = this.paths.detectFormat(sourcePath);
         try {
             if (format === "ndjson") {
-                await this.sendNdjson(client, table.name, sourcePath);
+                await this.sendNdjson(client, table.name, sourcePath, startFrom);
             } else if (format === "json") {
-                await this.sendJson(client, table.name, sourcePath);
+                await this.sendJson(client, table.name, sourcePath, startFrom);
             } else {
                 throw new Error(`Unknown file format for ${sourcePath}`);
             }
@@ -39,23 +39,25 @@ class UploadImpl implements UploadAbstraction.Interface {
     private async sendJson(
         client: ClientFactory.Client,
         tableName: string,
-        sourcePath: string
+        sourcePath: string,
+        startFrom: number
     ): Promise<void> {
         const items = JSON.parse(readFileSync(sourcePath, "utf-8")) as Record<string, unknown>[];
-        let written = 0;
-        for (let i = 0; i < items.length; i += CHUNK_SIZE) {
+        let written = startFrom;
+        for (let i = startFrom; i < items.length; i += CHUNK_SIZE) {
             const chunk = items.slice(i, i + CHUNK_SIZE);
             await this.sendChunk(client, tableName, chunk);
             written += chunk.length;
             this.logger.info(`Written ${written}/${items.length}`);
         }
-        this.logger.done(`Wrote ${items.length} items to ${tableName}`);
+        this.logger.done(`Wrote ${written - startFrom} items to ${tableName}`);
     }
 
     private async sendNdjson(
         client: ClientFactory.Client,
         tableName: string,
-        sourcePath: string
+        sourcePath: string,
+        startFrom: number
     ): Promise<void> {
         const rl = createInterface({
             input: createReadStream(sourcePath),
@@ -64,15 +66,19 @@ class UploadImpl implements UploadAbstraction.Interface {
 
         let buffer: Record<string, unknown>[] = [];
         let written = 0;
+        let lineIndex = 0;
         for await (const line of rl) {
             if (line.trim().length === 0) {
+                continue;
+            }
+            if (lineIndex++ < startFrom) {
                 continue;
             }
             buffer.push(this.getParsed(line));
             if (buffer.length >= CHUNK_SIZE) {
                 await this.sendChunk(client, tableName, buffer);
                 written += buffer.length;
-                this.logger.info(`Written ${written} items...`);
+                this.logger.info(`Written ${startFrom + written} items...`);
                 buffer = [];
             }
         }
