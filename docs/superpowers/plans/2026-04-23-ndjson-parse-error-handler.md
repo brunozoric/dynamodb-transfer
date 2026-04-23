@@ -558,7 +558,7 @@ export async function bootstrap(): Promise<Container> {
 async function loadConfig(container: Container): Promise<Config.ResolvedTable[]> {
     let factory: ConfigFactory;
     try {
-        const mod = await import("../../config.js");
+        const mod = await import("../config.js");
         factory = mod.default as ConfigFactory;
     } catch (err) {
         if (err instanceof Error && "code" in err && err.code === "ERR_MODULE_NOT_FOUND") {
