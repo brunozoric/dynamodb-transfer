@@ -3,9 +3,7 @@ import { ParseNdJsonErrorHandler } from "~/features/ParseNdJsonErrorHandler/inde
 import type { Config } from "~/features/Config/index.ts";
 import { NdJsonLineAccumulator as NdJsonLineAccumulatorAbstraction } from "./abstractions/index.ts";
 
-export class NdJsonLineAccumulatorImpl
-    implements NdJsonLineAccumulatorAbstraction.Interface
-{
+export class NdJsonLineAccumulatorImpl implements NdJsonLineAccumulatorAbstraction.Interface {
     private pending: string[] = [];
 
     public constructor(
@@ -33,7 +31,9 @@ export class NdJsonLineAccumulatorImpl
             this.pending = [];
             return record;
         } catch (_error) {
-            this.logger.debug(`Newline-joined accumulation did not parse, trying empty-string join`);
+            this.logger.debug(
+                `Newline-joined accumulation did not parse, trying empty-string join`
+            );
         }
 
         try {
@@ -50,7 +50,9 @@ export class NdJsonLineAccumulatorImpl
             const discardCount = this.pending.length;
             const discarded = this.pending.join("\n");
             this.pending = [];
-            this.logger.warn(`Discarding ${discardCount} accumulated line(s) that could not form valid JSON`);
+            this.logger.warn(
+                `Discarding ${discardCount} accumulated line(s) that could not form valid JSON`
+            );
             await this.handler.handle({
                 table,
                 line: discarded,

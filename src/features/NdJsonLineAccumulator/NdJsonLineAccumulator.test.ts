@@ -36,7 +36,7 @@ describe("NdJsonLineAccumulatorImpl", () => {
     beforeEach(() => {
         logger = makeLogger();
         handleMock = vi.fn().mockResolvedValue(null);
-        handler = { handle: handleMock };
+        handler = { handle: handleMock } as ParseNdJsonErrorHandler.Interface;
         accumulator = new NdJsonLineAccumulatorImpl(logger, handler);
     });
 
@@ -88,7 +88,9 @@ describe("NdJsonLineAccumulatorImpl", () => {
             await accumulator.feed("line one", table);
             await accumulator.feed("line two", table);
             await accumulator.feed('{"pk":"user#3"}', table);
-            const call = handleMock.mock.calls[0]![0] as Parameters<ParseNdJsonErrorHandler.Interface["handle"]>[0];
+            const call = handleMock.mock.calls[0]![0] as Parameters<
+                ParseNdJsonErrorHandler.Interface["handle"]
+            >[0];
             expect(call.line).toBe("line one\nline two");
             expect(call.table).toBe(table);
         });
@@ -121,7 +123,9 @@ describe("NdJsonLineAccumulatorImpl", () => {
             await accumulator.feed("json", table);
             await accumulator.flush(table);
             expect(handleMock).toHaveBeenCalledOnce();
-            const call = handleMock.mock.calls[0]![0] as Parameters<ParseNdJsonErrorHandler.Interface["handle"]>[0];
+            const call = handleMock.mock.calls[0]![0] as Parameters<
+                ParseNdJsonErrorHandler.Interface["handle"]
+            >[0];
             expect(call.line).toBe("{bad\njson");
             expect(call.table).toBe(table);
         });
@@ -180,7 +184,10 @@ describe("NdJsonLineAccumulatorImpl — real-world partial file", () => {
 
         expect(records).toHaveLength(3);
         expect(records[0]).toEqual({ correct: "yes" });
-        expect(records[1]).toHaveProperty("PK", "T#root#L#en-US#CMS#CME#wby-aco-6812738e05e2640008961dcb");
+        expect(records[1]).toHaveProperty(
+            "PK",
+            "T#root#L#en-US#CMS#CME#wby-aco-6812738e05e2640008961dcb"
+        );
         expect(records[2]).toEqual({ correctAgain: "yes" });
         expect(handleMock).not.toHaveBeenCalled();
     });
