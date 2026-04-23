@@ -8,6 +8,7 @@ export interface IUpload {
 export interface IUploadRunOptions {
     sourcePath: string;
     table: Config.ResolvedTable;
+    startFrom: number;
 }
 
 export const Upload = createAbstraction<IUpload>("Commands/Upload");

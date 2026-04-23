@@ -55,7 +55,7 @@ describe("Upload", () => {
 
     const container = createTestContainer();
     const upload = container.resolve(Upload);
-    await upload.run({ sourcePath, table: makeTable(tableName) });
+    await upload.run({ sourcePath, table: makeTable(tableName), startFrom: 0 });
 
     const scanned = await scanAllItems(tableName);
     expect(scanned).toHaveLength(2);
@@ -73,7 +73,7 @@ describe("Upload", () => {
 
     const container = createTestContainer();
     const upload = container.resolve(Upload);
-    await upload.run({ sourcePath, table: makeTable(tableName) });
+    await upload.run({ sourcePath, table: makeTable(tableName), startFrom: 0 });
 
     const scanned = await scanAllItems(tableName);
     expect(scanned).toHaveLength(1);
@@ -94,7 +94,7 @@ describe("Upload", () => {
 
     const container = createTestContainer();
     const upload = container.resolve(Upload);
-    await upload.run({ sourcePath, table: makeTable(tableName) });
+    await upload.run({ sourcePath, table: makeTable(tableName), startFrom: 0 });
 
     const scanned = await scanAllItems(tableName);
     expect(scanned).toHaveLength(60);
@@ -108,7 +108,51 @@ describe("Upload", () => {
     const container = createTestContainer();
     const upload = container.resolve(Upload);
     await expect(
-      upload.run({ sourcePath, table: makeTable("does-not-exist") })
+      upload.run({ sourcePath, table: makeTable("does-not-exist"), startFrom: 0 })
     ).rejects.toThrowError(/^Upload failed:/);
+  });
+
+  it("resumes NDJSON upload from a given line, skipping earlier items", async () => {
+    const tableName = await createTestTable();
+    tablesToClean.push(tableName);
+    const dir = makeTmpDir();
+    dirsToClean.push(dir);
+    const sourcePath = join(dir, "data.ndjson");
+    const items = [
+      { PK: "a", value: 1 },
+      { PK: "b", value: 2 },
+      { PK: "c", value: 3 }
+    ];
+    writeFileSync(sourcePath, items.map(i => JSON.stringify(i)).join("\n") + "\n");
+
+    const container = createTestContainer();
+    const upload = container.resolve(Upload);
+    await upload.run({ sourcePath, table: makeTable(tableName), startFrom: 1 });
+
+    const scanned = await scanAllItems(tableName);
+    expect(scanned).toHaveLength(2);
+    expect(scanned.map(s => s.PK).sort()).toEqual(["b", "c"]);
+  });
+
+  it("resumes JSON upload from a given index, skipping earlier items", async () => {
+    const tableName = await createTestTable();
+    tablesToClean.push(tableName);
+    const dir = makeTmpDir();
+    dirsToClean.push(dir);
+    const sourcePath = join(dir, "data.json");
+    const items = [
+      { PK: "a", value: 1 },
+      { PK: "b", value: 2 },
+      { PK: "c", value: 3 }
+    ];
+    writeFileSync(sourcePath, JSON.stringify(items));
+
+    const container = createTestContainer();
+    const upload = container.resolve(Upload);
+    await upload.run({ sourcePath, table: makeTable(tableName), startFrom: 2 });
+
+    const scanned = await scanAllItems(tableName);
+    expect(scanned).toHaveLength(1);
+    expect(scanned[0]?.PK).toBe("c");
   });
 });
