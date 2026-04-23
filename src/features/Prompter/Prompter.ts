@@ -135,8 +135,12 @@ class PrompterImpl implements PrompterAbstraction.Interface {
 
     public async confirmUpload(options: PrompterAbstraction.ConfirmUploadOptions): Promise<void> {
         console.log("");
+        const resumeNote =
+            options.startFrom > 0
+                ? `, starting from ${options.format === "json" ? "index" : "line"} ${options.startFrom}`
+                : "";
         console.log(
-            `About to write ${options.sourcePath} → ${options.table.name} (${options.table.region}, profile: ${options.table.awsProfile})`
+            `About to write ${options.sourcePath} → ${options.table.name} (${options.table.region}, profile: ${options.table.awsProfile})${resumeNote}`
         );
         await input({
             message: `Type the destination table name to confirm (${options.table.name}), or Ctrl+C to cancel:`,
@@ -151,6 +155,21 @@ class PrompterImpl implements PrompterAbstraction.Interface {
             message: "Save logs to a file?",
             default: false
         });
+    }
+
+    public async startFrom(): Promise<number> {
+        const raw = await input({
+            message: "Start from index (JSON) or line (NDJSON) — 0 to start from the beginning:",
+            default: "0",
+            validate: value => {
+                const trimmed = value.trim();
+                if (!/^\d+$/.test(trimmed)) {
+                    return "Must be a whole number";
+                }
+                return true;
+            }
+        });
+        return Number(raw.trim());
     }
 }
 
