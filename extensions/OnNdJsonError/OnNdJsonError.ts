@@ -3,7 +3,8 @@ import { Logger, ParseNdJsonErrorHandler } from "~/index.js";
 const passErrorStartsWith = [
   "Upload failed: Unexpected token",
   "Unterminated string in JSON at position",
-  "Unexpected token "
+  "Unexpected token ",
+  "Unexpected non-whitespace"
 ];
 
 class OnNdJsonErrorImpl implements ParseNdJsonErrorHandler.Interface {
