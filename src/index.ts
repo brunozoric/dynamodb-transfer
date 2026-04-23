@@ -1,1 +1,2 @@
-// export stuff that can be used by user. abstractions only
+export { defineConfig } from "./features/Config/index.ts";
+export { ParseNdJsonErrorHandler } from "./features/ParseNdJsonErrorHandler/index.ts";
