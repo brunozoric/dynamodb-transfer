@@ -9,6 +9,7 @@ import { DownloadFeature } from "~/features/Download/index.ts";
 import { UploadFeature } from "~/features/Upload/index.ts";
 import { ParseNdJsonErrorHandlerFeature } from "~/features/ParseNdJsonErrorHandler/index.ts";
 import { CliFeature } from "~/features/Cli/index.ts";
+import createExtensions from "@extensions/index.ts";
 
 export async function bootstrap(): Promise<Container> {
     const container = new Container();
@@ -19,6 +20,9 @@ export async function bootstrap(): Promise<Container> {
     DownloadFeature.register(container);
     UploadFeature.register(container);
     ParseNdJsonErrorHandlerFeature.register(container);
+
+    await createExtensions({ container });
+
     CliFeature.register(container);
 
     const resolvedTables = await loadConfig(container);
