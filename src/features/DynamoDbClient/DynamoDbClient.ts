@@ -1,9 +1,4 @@
-import {
-    BatchWriteCommand,
-    DynamoDBDocumentClient,
-    QueryCommand,
-    ScanCommand
-} from "@aws-sdk/lib-dynamodb";
+import { BatchWriteCommand, DynamoDBDocumentClient, ScanCommand } from "@aws-sdk/lib-dynamodb";
 import { SourceDynamoDbClient } from "./abstractions/DynamoDbClient.ts";
 import type { DynamoDbClientConfig } from "./abstractions/DynamoDbClientConfig.ts";
 import { isRetryableAwsError, retryBackoffMs } from "~/base/index.ts";
@@ -50,37 +45,6 @@ export class DynamoDbClientImpl implements SourceDynamoDbClient.Interface {
 
             lastEvaluatedKey = response.LastEvaluatedKey;
         } while (lastEvaluatedKey);
-    }
-
-    public async query<T extends SourceDynamoDbClient.Record>(
-        tableName: string,
-        pk: string,
-        sk?: string,
-        options?: SourceDynamoDbClient.Query
-    ): Promise<T[]> {
-        const pkAttr = options?.pkAttribute ?? "PK";
-        let keyConditionExpression = `${pkAttr} = :pk`;
-        const expressionAttributeValues: Record<string, unknown> = { ":pk": pk };
-
-        if (sk) {
-            if (options?.sortKeyCondition?.operator === "beginsWith") {
-                keyConditionExpression += " AND begins_with(SK, :sk)";
-            } else {
-                keyConditionExpression += " AND SK = :sk";
-            }
-            expressionAttributeValues[":sk"] = sk;
-        }
-
-        const command = new QueryCommand({
-            TableName: tableName,
-            IndexName: options ? options.indexName : undefined,
-            KeyConditionExpression: keyConditionExpression,
-            ExpressionAttributeValues: expressionAttributeValues,
-            Limit: options ? options.limit : undefined
-        });
-
-        const response = await this.executeWithRetry(() => this.client.send(command));
-        return (response.Items ?? []) as T[];
     }
 
     public async batchPut<T extends SourceDynamoDbClient.Record>(
