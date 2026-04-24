@@ -66,6 +66,10 @@ export class DynamoDbClientImpl implements DynamoDbClient.Interface {
             try {
                 const response = await this.executeWithRetry(() => this.client.send(command));
 
+                for (const record of batch) {
+                    this.logger.debug(`Wrote: ${JSON.stringify(this.indexKeys(record))}`);
+                }
+
                 const unprocessed = response.UnprocessedItems?.[tableName];
                 if (unprocessed && unprocessed.length > 0) {
                     const unprocessedRecords = unprocessed.map(item => item.PutRequest!.Item as T);
@@ -81,6 +85,16 @@ export class DynamoDbClientImpl implements DynamoDbClient.Interface {
                 throw error;
             }
         }
+    }
+
+    private indexKeys(record: Record<string, unknown>): Record<string, unknown> {
+        const result: Record<string, unknown> = {};
+        for (const [key, value] of Object.entries(record)) {
+            if (key === "PK" || key === "SK" || key.includes("GSI")) {
+                result[key] = value;
+            }
+        }
+        return result;
     }
 
     private async executeWithRetry<T>(fn: () => Promise<T>): Promise<T> {
