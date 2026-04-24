@@ -45,7 +45,11 @@ class UploadImpl implements UploadAbstraction.Interface {
     ): Promise<DynamoDbClient.Record | null> {
         const stamped = { ...record, _tt: Date.now() };
         const modified = await this.modifier.modify({ record: stamped, table, sourcePath });
-        return modified as DynamoDbClient.Record | null;
+        if (modified === null) {
+            this.logger.debug("Skipping record", stamped);
+            return null;
+        }
+        return modified as DynamoDbClient.Record;
     }
 
     private async sendJson(
