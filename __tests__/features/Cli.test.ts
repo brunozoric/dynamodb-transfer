@@ -73,6 +73,7 @@ describe("Cli", () => {
         segments: async () => 1,
         downloadFormat: async () => "ndjson",
         destPath: async () => destPath,
+        logLevel: async () => "silent",
         logToFile: async () => false
       })
     );
@@ -107,9 +108,11 @@ describe("Cli", () => {
         action: async () => "upload",
         sourceFile: async () => sourcePath,
         table: async ({ tables: ts }) => ts[0]!,
+        startFrom: async () => 0,
         confirmUpload: async () => {
           // accept: no-op
         },
+        logLevel: async () => "silent",
         logToFile: async () => false
       })
     );
@@ -158,5 +161,43 @@ describe("Cli", () => {
 
     const cli = container.resolve(Cli);
     await expect(cli.run()).resolves.toBeUndefined();
+  });
+
+  it("skips items before startFrom in the upload flow", async () => {
+    const tableName = await createTestTable();
+    tablesToClean.push(tableName);
+
+    const dir = makeTmpDir();
+    dirsToClean.push(dir);
+    const sourcePath = join(dir, "data.ndjson");
+    writeFileSync(
+      sourcePath,
+      [JSON.stringify({ PK: "skip", v: 0 }), JSON.stringify({ PK: "keep", v: 1 })].join("\n") + "\n"
+    );
+
+    const tables = [makeWritableTable(tableName)];
+    const container = createTestContainer({ tables });
+
+    container.registerInstance(
+      Prompter,
+      createScriptedPrompter({
+        action: async () => "upload",
+        sourceFile: async () => sourcePath,
+        table: async ({ tables: ts }) => ts[0]!,
+        startFrom: async () => 1,
+        confirmUpload: async () => {
+          // accept: no-op
+        },
+        logLevel: async () => "silent",
+        logToFile: async () => false
+      })
+    );
+
+    const cli = container.resolve(Cli);
+    await cli.run();
+
+    const scanned = await scanAllItems(tableName);
+    expect(scanned).toHaveLength(1);
+    expect(scanned[0]?.PK).toBe("keep");
   });
 });

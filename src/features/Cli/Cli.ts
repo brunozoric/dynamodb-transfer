@@ -50,7 +50,7 @@ class CliImpl implements CliAbstraction.Interface {
         if (destPath === null) {
             return;
         }
-        await this.maybeAttachLogFile(table.name);
+        await this.configureLogging(table.name);
         await this.download.run({ table, destPath, format, segments });
     }
 
@@ -71,19 +71,25 @@ class CliImpl implements CliAbstraction.Interface {
             tables: writableTables,
             message: "Which table should receive the data?"
         });
-        await this.prompter.confirmUpload({ sourcePath, table });
-        await this.maybeAttachLogFile(table.name);
-        await this.upload.run({ sourcePath, table });
+        const format = this.paths.detectFormat(sourcePath);
+        const startFrom = await this.prompter.startFrom();
+        await this.prompter.confirmUpload({ sourcePath, table, startFrom, format });
+        await this.configureLogging(table.name);
+        await this.upload.run({ sourcePath, table, startFrom });
     }
 
-    private async maybeAttachLogFile(tableName: string): Promise<void> {
-        const save = await this.prompter.logToFile();
-        if (!save) {
-            return;
+    private async configureLogging(tableName: string): Promise<void> {
+        const log = this.config.logSettings();
+
+        const level = log?.level ?? (await this.prompter.logLevel());
+        this.logger.setLevel(level);
+
+        const toFile = log?.toFile ?? (await this.prompter.logToFile());
+        if (toFile) {
+            const logPath = this.paths.logFilePath({ tableName });
+            this.logger.attachFile(logPath);
+            this.logger.info(`Saving logs to ${logPath}`);
         }
-        const logPath = this.paths.logFilePath({ tableName });
-        this.logger.attachFile(logPath);
-        this.logger.info(`Saving logs to ${logPath}`);
     }
 }
 

@@ -1,8 +1,21 @@
+import type { Container } from "@webiny/di";
 import { createAbstraction } from "~/base/index.ts";
 import { ConfigSchema, type RawConfig } from "./schema.ts";
 
+export interface IConfigFactoryContext {
+    container: Container;
+}
+
+export type ConfigFactory = (ctx: IConfigFactoryContext) => RawConfig | Promise<RawConfig>;
+
+export interface ILogSettings {
+    toFile?: boolean;
+    level?: string;
+}
+
 export interface IConfig {
     load(): Promise<IResolvedTable[]>;
+    logSettings(): ILogSettings | null;
 }
 
 export interface IResolvedTable {
@@ -18,6 +31,7 @@ export const Config = createAbstraction<IConfig>("Config/Config");
 export namespace Config {
     export type Interface = IConfig;
     export type ResolvedTable = IResolvedTable;
+    export type LogSettings = ILogSettings;
 }
 
 export class ConfigError extends Error {
@@ -27,8 +41,8 @@ export class ConfigError extends Error {
     }
 }
 
-export function defineConfig(config: RawConfig): RawConfig {
-    return config;
+export function defineConfig(factory: ConfigFactory): ConfigFactory {
+    return factory;
 }
 
 export { ConfigSchema };

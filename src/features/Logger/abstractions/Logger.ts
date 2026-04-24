@@ -7,6 +7,7 @@ export interface ILogger {
     error(message: string, ...args: unknown[]): void;
     fatal(message: string, ...args: unknown[]): void;
     done(message: string): void;
+    setLevel(level: string): void;
     attachFile(path: string): void;
 }
 

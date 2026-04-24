@@ -105,6 +105,10 @@ export class PinoLogger implements Logger.Interface {
         this.teeToFile("done", message);
     }
 
+    public setLevel(level: string): void {
+        this.logger.level = level;
+    }
+
     public attachFile(path: string): void {
         const dir = dirname(path);
         mkdirSync(dir, { recursive: true });

@@ -42,9 +42,10 @@
         "skipLibCheck": true,
         "allowImportingTsExtensions": true,
         "paths": {
-            "~/*": ["./src/*"]
+            "~/*": ["./src/*"],
+            "@extensions/*": ["./extensions/*"]
         }
     },
-    "include": ["./src/**/*", "__tests__/**/*", "./types/**/*"],
+    "include": ["./src/**/*", "./extensions/**/*", "__tests__/**/*", "./types/**/*"],
     "exclude": ["node_modules"]
 }
