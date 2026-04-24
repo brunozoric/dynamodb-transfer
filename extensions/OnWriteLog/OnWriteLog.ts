@@ -3,6 +3,12 @@ import { WriteLogMapper } from "~/index.js";
 class OnWriteLogImpl implements WriteLogMapper.Interface {
   public async map(options: WriteLogMapper.MapOptions): Promise<Record<string, unknown>> {
     const { record, tableName, keys } = options;
+
+    // TODO: add index field for Elasticsearch tables
+    // if (tableName === "my-es-table") {
+    //   return { ...keys, index: record.index };
+    // }
+
     return keys;
   }
 }
