@@ -59,7 +59,9 @@ export class DynamoDbClientImpl implements DynamoDbClient.Interface {
             const batch = records.slice(i, i + BATCH_SIZE);
             const command = new BatchWriteCommand({
                 RequestItems: {
-                    [tableName]: batch.map(record => ({ PutRequest: { Item: record } }))
+                    [tableName]: batch.map(record => ({
+                        PutRequest: { Item: { ...record, _tt: Date.now() } }
+                    }))
                 }
             });
 
