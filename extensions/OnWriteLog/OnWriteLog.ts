@@ -1,15 +1,22 @@
 import { WriteLogMapper } from "~/index.js";
 
 class OnWriteLogImpl implements WriteLogMapper.Interface {
-  public async map(options: WriteLogMapper.MapOptions): Promise<Record<string, unknown>> {
+  public async map(options: WriteLogMapper.MapOptions): Promise<Record<string, unknown> | null> {
     const { record, tableName, keys } = options;
 
-    // TODO: add index field for Elasticsearch tables
-    // if (tableName === "my-es-table") {
-    //   return { ...keys, index: record.index };
-    // }
+    if (tableName.includes("Es.ndjson") === false) {
+      return null;
+    }
 
-    return keys;
+    const index = record?.index as string | undefined;
+    if (typeof index !== "string") {
+      return null;
+    }
+
+    return {
+      ...keys,
+      index
+    };
   }
 }
 
