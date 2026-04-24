@@ -3,6 +3,7 @@ import { DynamoDbClient } from "./abstractions/DynamoDbClient.ts";
 import type { DynamoDbClientConfig } from "./abstractions/DynamoDbClientConfig.ts";
 import { isRetryableAwsError, retryBackoffMs } from "~/base/index.ts";
 import type { Logger } from "~/features/Logger/index.ts";
+import type { WriteLogMapper } from "~/features/WriteLogMapper/index.ts";
 
 const BATCH_SIZE = 25;
 const DEFAULT_MAX_RETRIES = 6;
@@ -15,6 +16,7 @@ export class DynamoDbClientImpl implements DynamoDbClient.Interface {
     public constructor(
         private readonly client: DynamoDBDocumentClient,
         private readonly logger: Logger.Interface,
+        private readonly writeLogMapper: WriteLogMapper.Interface,
         tuning?: DynamoDbClientConfig.Tuning
     ) {
         this.maxRetries = tuning?.maxRetries ?? DEFAULT_MAX_RETRIES;
@@ -67,7 +69,9 @@ export class DynamoDbClientImpl implements DynamoDbClient.Interface {
                 const response = await this.executeWithRetry(() => this.client.send(command));
 
                 for (const record of batch) {
-                    this.logger.debug(`Wrote: ${JSON.stringify(this.indexKeys(record))}`);
+                    const keys = this.indexKeys(record);
+                    const payload = await this.writeLogMapper.map({ record, tableName, keys });
+                    this.logger.debug(`Wrote: ${JSON.stringify(payload)}`);
                 }
 
                 const unprocessed = response.UnprocessedItems?.[tableName];
