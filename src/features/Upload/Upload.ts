@@ -73,6 +73,7 @@ class UploadImpl implements UploadAbstraction.Interface {
         sourcePath: string,
         startFrom: number
     ): Promise<void> {
+        this.logger.debug("Sending NDJSON");
         const rl = createInterface({
             input: createReadStream(sourcePath),
             crlfDelay: Infinity

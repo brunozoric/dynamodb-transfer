@@ -1,5 +1,6 @@
 import { Container } from "@webiny/di";
-import { Logger, LoggerFeature, readLoggerParamsFromEnv } from "~/features/Logger/index.ts";
+import { LoggerFeature, readLoggerParamsFromEnv } from "~/features/Logger/index.ts";
+import type { LogLevel } from "~/features/Logger/index.ts";
 import { PathsFeature } from "~/features/Paths/index.ts";
 import { PrompterFeature } from "~/features/Prompter/index.ts";
 import { Config, ConfigError, ConfigSchema } from "~/features/Config/index.ts";
@@ -16,7 +17,14 @@ import createExtensions from "@extensions/index.ts";
 
 export async function bootstrap(): Promise<Container> {
     const container = new Container();
-    LoggerFeature.register(container, readLoggerParamsFromEnv(process.env));
+
+    const rawConfig = await readRawConfig();
+    const envParams = readLoggerParamsFromEnv(process.env);
+    LoggerFeature.register(container, {
+        ...envParams,
+        logLevel: (rawConfig?.log?.level ?? envParams.logLevel) as LogLevel
+    });
+
     PathsFeature.register(container);
     PrompterFeature.register(container);
     DynamoDbClientFeature.register(container);
@@ -31,10 +39,7 @@ export async function bootstrap(): Promise<Container> {
 
     CliFeature.register(container);
 
-    const { tables: resolvedTables, log: resolvedLog } = await loadConfig(container);
-    if (resolvedLog?.level) {
-        container.resolve(Logger).setLevel(resolvedLog.level);
-    }
+    const { tables: resolvedTables, log: resolvedLog } = resolveConfig(rawConfig);
     container.registerInstance(Config, {
         load: async () => resolvedTables,
         logSettings: () => resolvedLog
@@ -43,12 +48,19 @@ export async function bootstrap(): Promise<Container> {
     return container;
 }
 
-interface LoadedConfig {
-    tables: Config.ResolvedTable[];
-    log: Config.LogSettings | null;
+interface RawConfigResult {
+    log?: { level?: string; toFile?: boolean };
+    defaults: { awsProfile: string; region: string };
+    tables: Array<{
+        name: string;
+        description: string;
+        writable: boolean;
+        awsProfile?: string;
+        region?: string;
+    }>;
 }
 
-async function loadConfig(container: Container): Promise<LoadedConfig> {
+async function readRawConfig(): Promise<RawConfigResult | null> {
     let factory: ConfigFactory;
     try {
         const mod = await import("../config.js");
@@ -60,7 +72,7 @@ async function loadConfig(container: Container): Promise<LoadedConfig> {
         throw err;
     }
 
-    const raw = await factory({ container });
+    const raw = await factory({ container: new Container() });
     const parsed = ConfigSchema.safeParse(raw);
     if (!parsed.success) {
         const first = parsed.error.issues[0];
@@ -73,7 +85,19 @@ async function loadConfig(container: Container): Promise<LoadedConfig> {
         throw new ConfigError(msg);
     }
 
-    const { defaults, tables, log } = parsed.data;
+    return parsed.data as RawConfigResult;
+}
+
+interface LoadedConfig {
+    tables: Config.ResolvedTable[];
+    log: Config.LogSettings | null;
+}
+
+function resolveConfig(raw: RawConfigResult | null): LoadedConfig {
+    if (!raw) {
+        return { tables: [], log: null };
+    }
+    const { defaults, tables, log } = raw;
     return {
         tables: tables.map(table => ({
             name: table.name,
