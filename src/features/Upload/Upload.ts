@@ -38,6 +38,16 @@ class UploadImpl implements UploadAbstraction.Interface {
         }
     }
 
+    private extractKeys(record: Record<string, unknown>): Record<string, unknown> {
+        const keys: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(record)) {
+            if (k === "PK" || k === "SK" || /^GSI\d+_(PK|SK)$/.test(k)) {
+                keys[k] = v;
+            }
+        }
+        return keys;
+    }
+
     private async prepare(
         record: Record<string, unknown>,
         table: Config.ResolvedTable,
@@ -46,7 +56,7 @@ class UploadImpl implements UploadAbstraction.Interface {
         const stamped = { ...record, _tt: Date.now() };
         const modified = await this.modifier.modify({ record: stamped, table, sourcePath });
         if (modified === null) {
-            this.logger.debug("Skipping record", stamped);
+            this.logger.debug(`Skipping record: ${JSON.stringify(this.extractKeys(stamped))}`);
             return null;
         }
         return modified as DynamoDbClient.Record;
