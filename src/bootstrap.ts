@@ -31,13 +31,21 @@ export async function bootstrap(): Promise<Container> {
 
     CliFeature.register(container);
 
-    const resolvedTables = await loadConfig(container);
-    container.registerInstance(Config, { load: async () => resolvedTables });
+    const { tables: resolvedTables, log: resolvedLog } = await loadConfig(container);
+    container.registerInstance(Config, {
+        load: async () => resolvedTables,
+        logSettings: () => resolvedLog
+    });
 
     return container;
 }
 
-async function loadConfig(container: Container): Promise<Config.ResolvedTable[]> {
+interface LoadedConfig {
+    tables: Config.ResolvedTable[];
+    log: Config.LogSettings | null;
+}
+
+async function loadConfig(container: Container): Promise<LoadedConfig> {
     let factory: ConfigFactory;
     try {
         const mod = await import("../config.js");
@@ -62,12 +70,15 @@ async function loadConfig(container: Container): Promise<Config.ResolvedTable[]>
         throw new ConfigError(msg);
     }
 
-    const { defaults, tables } = parsed.data;
-    return tables.map(table => ({
-        name: table.name,
-        description: table.description,
-        writable: table.writable,
-        awsProfile: table.awsProfile ?? defaults.awsProfile,
-        region: table.region ?? defaults.region
-    }));
+    const { defaults, tables, log } = parsed.data;
+    return {
+        tables: tables.map(table => ({
+            name: table.name,
+            description: table.description,
+            writable: table.writable,
+            awsProfile: table.awsProfile ?? defaults.awsProfile,
+            region: table.region ?? defaults.region
+        })),
+        log: (log ?? null) as Config.LogSettings | null
+    };
 }

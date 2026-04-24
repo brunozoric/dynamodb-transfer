@@ -39,6 +39,10 @@ class ConfigImpl implements ConfigAbstraction.Interface {
             region: table.region ?? defaults.region
         }));
     }
+
+    public logSettings(): ConfigAbstraction.LogSettings | null {
+        return null;
+    }
 }
 
 export const Config = ConfigAbstraction.createImplementation({

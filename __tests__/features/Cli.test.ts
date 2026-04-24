@@ -73,6 +73,7 @@ describe("Cli", () => {
         segments: async () => 1,
         downloadFormat: async () => "ndjson",
         destPath: async () => destPath,
+        logLevel: async () => "silent",
         logToFile: async () => false
       })
     );
@@ -111,6 +112,7 @@ describe("Cli", () => {
         confirmUpload: async () => {
           // accept: no-op
         },
+        logLevel: async () => "silent",
         logToFile: async () => false
       })
     );
@@ -186,6 +188,7 @@ describe("Cli", () => {
         confirmUpload: async () => {
           // accept: no-op
         },
+        logLevel: async () => "silent",
         logToFile: async () => false
       })
     );

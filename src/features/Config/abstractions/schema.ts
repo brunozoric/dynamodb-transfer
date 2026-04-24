@@ -15,8 +15,14 @@ export const DefaultsSchema = z.object({
     region: nonEmpty
 });
 
+export const LogConfigSchema = z.object({
+    toFile: z.boolean().optional(),
+    level: z.string().optional()
+});
+
 export const ConfigSchema = z
     .object({
+        log: LogConfigSchema.optional(),
         defaults: DefaultsSchema,
         tables: z.array(TableConfigSchema).min(1, "tables must be a non-empty array")
     })

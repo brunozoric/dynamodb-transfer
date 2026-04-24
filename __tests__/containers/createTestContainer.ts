@@ -38,6 +38,7 @@ export function createTestContainer(options: TestContainerOptions = {}): Contain
 
 function makeFakeConfig(tables: Config.ResolvedTable[]): Config.Interface {
   return {
-    load: async () => tables
+    load: async () => tables,
+    logSettings: () => null
   };
 }

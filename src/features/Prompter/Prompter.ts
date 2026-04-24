@@ -150,6 +150,20 @@ class PrompterImpl implements PrompterAbstraction.Interface {
         });
     }
 
+    public logLevel(): Promise<string> {
+        return select<string>({
+            message: "Log level?",
+            choices: [
+                { name: "info", value: "info" },
+                { name: "debug", value: "debug" },
+                { name: "warn", value: "warn" },
+                { name: "error", value: "error" },
+                { name: "silent", value: "silent" }
+            ],
+            default: "info"
+        });
+    }
+
     public logToFile(): Promise<boolean> {
         return confirm({
             message: "Save logs to a file?",

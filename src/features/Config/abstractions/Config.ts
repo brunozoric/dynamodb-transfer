@@ -8,8 +8,14 @@ export interface IConfigFactoryContext {
 
 export type ConfigFactory = (ctx: IConfigFactoryContext) => RawConfig | Promise<RawConfig>;
 
+export interface ILogSettings {
+    toFile?: boolean;
+    level?: string;
+}
+
 export interface IConfig {
     load(): Promise<IResolvedTable[]>;
+    logSettings(): ILogSettings | null;
 }
 
 export interface IResolvedTable {
@@ -25,6 +31,7 @@ export const Config = createAbstraction<IConfig>("Config/Config");
 export namespace Config {
     export type Interface = IConfig;
     export type ResolvedTable = IResolvedTable;
+    export type LogSettings = ILogSettings;
 }
 
 export class ConfigError extends Error {

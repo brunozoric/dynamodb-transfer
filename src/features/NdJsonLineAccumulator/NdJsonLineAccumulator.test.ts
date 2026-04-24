@@ -23,6 +23,7 @@ function makeLogger(): Logger.Interface {
         error: vi.fn(),
         fatal: vi.fn(),
         done: vi.fn(),
+        setLevel: vi.fn(),
         attachFile: vi.fn()
     };
 }
@@ -155,6 +156,7 @@ describe("NdJsonLineAccumulatorImpl — real-world partial file", () => {
             error: vi.fn(),
             fatal: vi.fn(),
             done: vi.fn(),
+            setLevel: vi.fn(),
             attachFile: vi.fn()
         };
         const handleMock = vi.fn().mockResolvedValue(null);

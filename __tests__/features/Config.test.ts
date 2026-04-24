@@ -36,7 +36,8 @@ describe("Config", () => {
     const brokenConfig: Config.Interface = {
       load: async () => {
         throw new ConfigError("tables: tables must be a non-empty array");
-      }
+      },
+      logSettings: () => null
     };
     container.registerInstance(Config, brokenConfig);
     const config = container.resolve(Config);
