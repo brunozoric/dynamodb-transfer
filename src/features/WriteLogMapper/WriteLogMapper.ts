@@ -3,7 +3,7 @@ import { WriteLogMapper as WriteLogMapperAbstraction } from "./abstractions/inde
 class WriteLogMapperImpl implements WriteLogMapperAbstraction.Interface {
     public async map(
         options: WriteLogMapperAbstraction.MapOptions
-    ): Promise<Record<string, unknown>> {
+    ): Promise<Record<string, unknown> | null> {
         return options.keys;
     }
 }

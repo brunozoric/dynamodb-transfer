@@ -71,7 +71,9 @@ export class DynamoDbClientImpl implements DynamoDbClient.Interface {
                 for (const record of batch) {
                     const keys = this.indexKeys(record);
                     const payload = await this.writeLogMapper.map({ record, tableName, keys });
-                    this.logger.debug(`Wrote: ${JSON.stringify(payload)}`);
+                    if (payload !== null) {
+                        this.logger.debug(`Wrote: ${JSON.stringify(payload)}`);
+                    }
                 }
 
                 const unprocessed = response.UnprocessedItems?.[tableName];

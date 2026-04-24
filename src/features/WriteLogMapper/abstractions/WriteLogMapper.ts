@@ -7,7 +7,7 @@ export interface IWriteLogMapOptions {
 }
 
 export interface IWriteLogMapper {
-    map(options: IWriteLogMapOptions): Promise<Record<string, unknown>>;
+    map(options: IWriteLogMapOptions): Promise<Record<string, unknown> | null>;
 }
 
 export const WriteLogMapper = createAbstraction<IWriteLogMapper>("Upload/WriteLogMapper");
