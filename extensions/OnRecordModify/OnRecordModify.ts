@@ -2,9 +2,9 @@ import { RecordModifier } from "~/index.js";
 
 class OnRecordModifyImpl implements RecordModifier.Interface {
   public async modify(options: RecordModifier.ModifyOptions): Promise<Record<string, unknown>> {
-    const { record, table, sourcePath } = options;
+    const { record } = options;
 
-    const index = record.index as string | undefined;
+    const index = record?.index as string | undefined;
     if (!index) {
       return record;
     }

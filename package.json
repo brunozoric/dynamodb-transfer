@@ -16,9 +16,9 @@
     "postinstall": "yarn set version berry"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.1034.0",
-    "@aws-sdk/credential-providers": "^3.1034.0",
-    "@aws-sdk/lib-dynamodb": "^3.1034.0",
+    "@aws-sdk/client-dynamodb": "^3.1036.0",
+    "@aws-sdk/credential-providers": "^3.1036.0",
+    "@aws-sdk/lib-dynamodb": "^3.1036.0",
     "@inquirer/prompts": "^8.4.2",
     "@webiny/di": "^0.2.3",
     "dotenv": "^17.4.2",
@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@aws-sdk/util-dynamodb": "^3.996.2",
-    "@smithy/node-http-handler": "^4.6.0",
+    "@smithy/node-http-handler": "^4.6.1",
     "@types/node": "^24.12.2",
     "@vitest/coverage-v8": "^4.1.5",
     "adio": "^3.0.0",
