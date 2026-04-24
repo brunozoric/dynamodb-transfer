@@ -20,16 +20,7 @@ class OnWriteLogImpl implements WriteLogMapper.Interface {
   }
 }
 
-export const OnWriteLog = Object.assign(
-  WriteLogMapper.createImplementation({
-    implementation: OnWriteLogImpl,
-    dependencies: []
-  }),
-  {
-    meta: {
-      id: "writeLogMapper",
-      name: "Write log mapper",
-      description: "Customise what is logged per written record"
-    }
-  }
-);
+export const OnWriteLog = WriteLogMapper.createImplementation({
+  implementation: OnWriteLogImpl,
+  dependencies: []
+});
