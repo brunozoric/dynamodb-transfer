@@ -1,5 +1,5 @@
 import { Container } from "@webiny/di";
-import { LoggerFeature, readLoggerParamsFromEnv } from "~/features/Logger/index.ts";
+import { Logger, LoggerFeature, readLoggerParamsFromEnv } from "~/features/Logger/index.ts";
 import { PathsFeature } from "~/features/Paths/index.ts";
 import { PrompterFeature } from "~/features/Prompter/index.ts";
 import { Config, ConfigError, ConfigSchema } from "~/features/Config/index.ts";
@@ -32,6 +32,9 @@ export async function bootstrap(): Promise<Container> {
     CliFeature.register(container);
 
     const { tables: resolvedTables, log: resolvedLog } = await loadConfig(container);
+    if (resolvedLog?.level) {
+        container.resolve(Logger).setLevel(resolvedLog.level);
+    }
     container.registerInstance(Config, {
         load: async () => resolvedTables,
         logSettings: () => resolvedLog
