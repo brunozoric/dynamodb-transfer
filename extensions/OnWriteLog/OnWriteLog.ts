@@ -2,9 +2,9 @@ import { WriteLogMapper } from "~/index.js";
 
 class OnWriteLogImpl implements WriteLogMapper.Interface {
   public async map(options: WriteLogMapper.MapOptions): Promise<Record<string, unknown> | null> {
-    const { record, tableName, keys } = options;
+    const { record, fileName, keys } = options;
 
-    if (tableName.includes("Es.ndjson") === false) {
+    if (fileName.toLowerCase().includes("es.ndjson") === false) {
       return null;
     }
 
