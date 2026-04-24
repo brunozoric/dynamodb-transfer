@@ -12,6 +12,7 @@ import { ParseNdJsonErrorHandlerFeature } from "~/features/ParseNdJsonErrorHandl
 import { NdJsonLineAccumulatorFeature } from "~/features/NdJsonLineAccumulator/index.ts";
 import { RecordModifierFeature } from "~/features/RecordModifier/index.ts";
 import { WriteLogMapperFeature } from "~/features/WriteLogMapper/index.ts";
+import { SessionFeature } from "~/features/Session/index.ts";
 import { CliFeature } from "~/features/Cli/index.ts";
 import createExtensions from "@extensions/index.ts";
 
@@ -26,6 +27,7 @@ export async function bootstrap(): Promise<Container> {
     });
 
     PathsFeature.register(container);
+    SessionFeature.register(container);
     PrompterFeature.register(container);
     DynamoDbClientFeature.register(container);
     DownloadFeature.register(container);

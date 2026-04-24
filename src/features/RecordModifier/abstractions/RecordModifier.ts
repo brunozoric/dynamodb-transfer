@@ -8,7 +8,7 @@ export interface IModifyOptions {
 }
 
 export interface IRecordModifier {
-    modify(options: IModifyOptions): Promise<Record<string, unknown>>;
+    modify(options: IModifyOptions): Promise<Record<string, unknown> | null>;
 }
 
 export const RecordModifier = createAbstraction<IRecordModifier>("Upload/RecordModifier");

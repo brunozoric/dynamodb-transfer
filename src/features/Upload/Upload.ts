@@ -42,10 +42,10 @@ class UploadImpl implements UploadAbstraction.Interface {
         record: Record<string, unknown>,
         table: Config.ResolvedTable,
         sourcePath: string
-    ): Promise<DynamoDbClient.Record> {
+    ): Promise<DynamoDbClient.Record | null> {
         const stamped = { ...record, _tt: Date.now() };
         const modified = await this.modifier.modify({ record: stamped, table, sourcePath });
-        return modified as DynamoDbClient.Record;
+        return modified as DynamoDbClient.Record | null;
     }
 
     private async sendJson(
@@ -57,10 +57,13 @@ class UploadImpl implements UploadAbstraction.Interface {
         const items = JSON.parse(readFileSync(sourcePath, "utf-8")) as Record<string, unknown>[];
         let written = startFrom;
         for (let i = startFrom; i < items.length; i += CHUNK_SIZE) {
-            const chunk = await Promise.all(
+            const prepared = await Promise.all(
                 items.slice(i, i + CHUNK_SIZE).map(r => this.prepare(r, table, sourcePath))
             );
-            await client.batchPut(table.name, chunk);
+            const chunk = prepared.filter((r): r is DynamoDbClient.Record => r !== null);
+            if (chunk.length > 0) {
+                await client.batchPut(table.name, chunk);
+            }
             written += chunk.length;
             this.logger.info(`Written ${written}/${items.length}`);
         }
@@ -92,7 +95,11 @@ class UploadImpl implements UploadAbstraction.Interface {
             if (parsed === null) {
                 continue;
             }
-            buffer.push(await this.prepare(parsed, table, sourcePath));
+            const prepared = await this.prepare(parsed, table, sourcePath);
+            if (prepared === null) {
+                continue;
+            }
+            buffer.push(prepared);
             if (buffer.length >= CHUNK_SIZE) {
                 await client.batchPut(table.name, buffer);
                 written += buffer.length;
@@ -102,7 +109,10 @@ class UploadImpl implements UploadAbstraction.Interface {
         }
         const flushed = await this.accumulator.flush(table);
         if (flushed !== null) {
-            buffer.push(await this.prepare(flushed, table, sourcePath));
+            const preparedFlushed = await this.prepare(flushed, table, sourcePath);
+            if (preparedFlushed !== null) {
+                buffer.push(preparedFlushed);
+            }
         }
         if (buffer.length > 0) {
             await client.batchPut(table.name, buffer);

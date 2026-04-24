@@ -3,15 +3,19 @@ import { existsSync } from "node:fs";
 import { basename } from "node:path";
 import type { Config } from "~/features/Config/index.ts";
 import { Paths } from "~/features/Paths/index.ts";
+import { Session } from "~/features/Session/index.ts";
 import { Prompter as PrompterAbstraction } from "./abstractions/index.ts";
 
 type OverwriteChoice = "overwrite" | "rename" | "cancel";
 
 class PrompterImpl implements PrompterAbstraction.Interface {
-    public constructor(private readonly paths: Paths.Interface) {}
+    public constructor(
+        private readonly paths: Paths.Interface,
+        private readonly session: Session.Interface
+    ) {}
 
-    public action(): Promise<PrompterAbstraction.Action> {
-        return select<PrompterAbstraction.Action>({
+    public async action(): Promise<PrompterAbstraction.Action> {
+        const result = await select<PrompterAbstraction.Action>({
             message: "What would you like to do?",
             choices: [
                 { name: "Download a table", value: "download" },
@@ -19,23 +23,27 @@ class PrompterImpl implements PrompterAbstraction.Interface {
                 { name: "Exit", value: "exit" }
             ]
         });
+        this.session.set("action", result);
+        return result;
     }
 
-    public table(options: PrompterAbstraction.TableOptions): Promise<Config.ResolvedTable> {
-        return select<Config.ResolvedTable>({
+    public async table(options: PrompterAbstraction.TableOptions): Promise<Config.ResolvedTable> {
+        const result = await select<Config.ResolvedTable>({
             message: options.message,
             choices: options.tables.map(table => ({
                 name: `${table.description} — ${table.name} (${table.region}, profile: ${table.awsProfile})`,
                 value: table
             }))
         });
+        this.session.set("table", result);
+        return result;
     }
 
-    public downloadFormat(
+    public async downloadFormat(
         options: PrompterAbstraction.DownloadFormatOptions
     ): Promise<Paths.DownloadFormat> {
         const parallel = options.segments > 1;
-        return select<Paths.DownloadFormat>({
+        const result = await select<Paths.DownloadFormat>({
             message: "Which file format?",
             choices: [
                 {
@@ -50,6 +58,8 @@ class PrompterImpl implements PrompterAbstraction.Interface {
             ],
             default: "ndjson"
         });
+        this.session.set("format", result);
+        return result;
     }
 
     public async segments(): Promise<number> {
@@ -71,21 +81,26 @@ class PrompterImpl implements PrompterAbstraction.Interface {
                 return true;
             }
         });
-        return Number(raw.trim());
+        const result = Number(raw.trim());
+        this.session.set("segments", result);
+        return result;
     }
 
     public async sourceFile(): Promise<string | null> {
         const paths = this.paths.listDataFiles();
         if (paths.length === 0) {
+            this.session.set("sourcePath", null);
             return null;
         }
-        return select<string>({
+        const result = await select<string>({
             message: "Which file do you want to upload?",
             choices: paths.map(p => ({
                 name: basename(p),
                 value: p
             }))
         });
+        this.session.set("sourcePath", result);
+        return result;
     }
 
     public async destPath(options: PrompterAbstraction.DestPathOptions): Promise<string | null> {
@@ -100,9 +115,11 @@ class PrompterImpl implements PrompterAbstraction.Interface {
                 ]
             });
             if (choice === "overwrite") {
+                this.session.set("destPath", path);
                 return path;
             }
             if (choice === "cancel") {
+                this.session.set("destPath", null);
                 return null;
             }
             const raw = await input({
@@ -130,6 +147,7 @@ class PrompterImpl implements PrompterAbstraction.Interface {
                 : `${trimmed}${options.extension}`;
             path = this.paths.inDataDir(newBasename);
         }
+        this.session.set("destPath", path);
         return path;
     }
 
@@ -150,8 +168,8 @@ class PrompterImpl implements PrompterAbstraction.Interface {
         });
     }
 
-    public logLevel(): Promise<string> {
-        return select<string>({
+    public async logLevel(): Promise<string> {
+        const result = await select<string>({
             message: "Log level?",
             choices: [
                 { name: "info", value: "info" },
@@ -162,13 +180,17 @@ class PrompterImpl implements PrompterAbstraction.Interface {
             ],
             default: "info"
         });
+        this.session.set("logLevel", result);
+        return result;
     }
 
-    public logToFile(): Promise<boolean> {
-        return confirm({
+    public async logToFile(): Promise<boolean> {
+        const result = await confirm({
             message: "Save logs to a file?",
             default: false
         });
+        this.session.set("logToFile", result);
+        return result;
     }
 
     public async startFrom(): Promise<number> {
@@ -183,11 +205,13 @@ class PrompterImpl implements PrompterAbstraction.Interface {
                 return true;
             }
         });
-        return Number(raw.trim());
+        const result = Number(raw.trim());
+        this.session.set("startFrom", result);
+        return result;
     }
 }
 
 export const Prompter = PrompterAbstraction.createImplementation({
     implementation: PrompterImpl,
-    dependencies: [Paths]
+    dependencies: [Paths, Session]
 });

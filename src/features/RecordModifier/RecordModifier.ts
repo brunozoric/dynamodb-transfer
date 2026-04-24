@@ -3,7 +3,7 @@ import { RecordModifier as RecordModifierAbstraction } from "./abstractions/inde
 class RecordModifierImpl implements RecordModifierAbstraction.Interface {
     public async modify(
         options: RecordModifierAbstraction.ModifyOptions
-    ): Promise<Record<string, unknown>> {
+    ): Promise<Record<string, unknown> | null> {
         return options.record;
     }
 }

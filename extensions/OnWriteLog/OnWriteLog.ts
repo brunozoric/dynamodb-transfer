@@ -1,10 +1,17 @@
 import { WriteLogMapper } from "~/index.js";
+import { Session } from "~/features/Session/index.js";
 
 class OnWriteLogImpl implements WriteLogMapper.Interface {
-  public async map(options: WriteLogMapper.MapOptions): Promise<Record<string, unknown> | null> {
-    const { record, fileName, keys } = options;
+  public constructor(private readonly session: Session.Interface) {}
 
-    if (fileName.toLowerCase().includes("es.ndjson") === false) {
+  public async map(options: WriteLogMapper.MapOptions): Promise<Record<string, unknown> | null> {
+    const { record, keys } = options;
+
+    const sourcePath = this.session.get("sourcePath");
+    if (!sourcePath || typeof sourcePath !== "string") {
+      return null;
+    }
+    if (sourcePath.toLowerCase().includes("es.ndjson") === false) {
       return null;
     }
 
@@ -22,5 +29,5 @@ class OnWriteLogImpl implements WriteLogMapper.Interface {
 
 export const OnWriteLog = WriteLogMapper.createImplementation({
   implementation: OnWriteLogImpl,
-  dependencies: []
+  dependencies: [Session]
 });
