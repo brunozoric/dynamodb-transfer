@@ -5,6 +5,7 @@ import { Paths } from "~/features/Paths/index.ts";
 import { DynamoDbClientFactory } from "~/features/DynamoDbClient/index.ts";
 import type { DynamoDbClient } from "~/features/DynamoDbClient/index.ts";
 import { NdJsonLineAccumulator } from "~/features/NdJsonLineAccumulator/index.ts";
+import { RecordModifier } from "~/features/RecordModifier/index.ts";
 import type { Config } from "~/features/Config/index.ts";
 import { Upload as UploadAbstraction } from "./abstractions/index.ts";
 
@@ -15,7 +16,8 @@ class UploadImpl implements UploadAbstraction.Interface {
         private readonly logger: Logger.Interface,
         private readonly paths: Paths.Interface,
         private readonly clientFactory: DynamoDbClientFactory.Interface,
-        private readonly accumulator: NdJsonLineAccumulator.Interface
+        private readonly accumulator: NdJsonLineAccumulator.Interface,
+        private readonly modifier: RecordModifier.Interface
     ) {}
 
     public async run(options: UploadAbstraction.RunOptions): Promise<void> {
@@ -26,7 +28,7 @@ class UploadImpl implements UploadAbstraction.Interface {
             if (format === "ndjson") {
                 await this.sendNdjson(client, table, sourcePath, startFrom);
             } else if (format === "json") {
-                await this.sendJson(client, table.name, sourcePath, startFrom);
+                await this.sendJson(client, table, sourcePath, startFrom);
             } else {
                 throw new Error(`Unknown file format for ${sourcePath}`);
             }
@@ -36,21 +38,33 @@ class UploadImpl implements UploadAbstraction.Interface {
         }
     }
 
+    private async prepare(
+        record: Record<string, unknown>,
+        table: Config.ResolvedTable,
+        sourcePath: string
+    ): Promise<DynamoDbClient.Record> {
+        const stamped = { ...record, _tt: Date.now() };
+        const modified = await this.modifier.modify({ record: stamped, table, sourcePath });
+        return modified as DynamoDbClient.Record;
+    }
+
     private async sendJson(
         client: DynamoDbClient.Interface,
-        tableName: string,
+        table: Config.ResolvedTable,
         sourcePath: string,
         startFrom: number
     ): Promise<void> {
         const items = JSON.parse(readFileSync(sourcePath, "utf-8")) as Record<string, unknown>[];
         let written = startFrom;
         for (let i = startFrom; i < items.length; i += CHUNK_SIZE) {
-            const chunk = items.slice(i, i + CHUNK_SIZE) as DynamoDbClient.Record[];
-            await client.batchPut(tableName, chunk);
+            const chunk = await Promise.all(
+                items.slice(i, i + CHUNK_SIZE).map(r => this.prepare(r, table, sourcePath))
+            );
+            await client.batchPut(table.name, chunk);
             written += chunk.length;
             this.logger.info(`Written ${written}/${items.length}`);
         }
-        this.logger.done(`Wrote ${written - startFrom} items to ${tableName}`);
+        this.logger.done(`Wrote ${written - startFrom} items to ${table.name}`);
     }
 
     private async sendNdjson(
@@ -78,7 +92,7 @@ class UploadImpl implements UploadAbstraction.Interface {
             if (parsed === null) {
                 continue;
             }
-            buffer.push(parsed as DynamoDbClient.Record);
+            buffer.push(await this.prepare(parsed, table, sourcePath));
             if (buffer.length >= CHUNK_SIZE) {
                 await client.batchPut(table.name, buffer);
                 written += buffer.length;
@@ -88,7 +102,7 @@ class UploadImpl implements UploadAbstraction.Interface {
         }
         const flushed = await this.accumulator.flush(table);
         if (flushed !== null) {
-            buffer.push(flushed as DynamoDbClient.Record);
+            buffer.push(await this.prepare(flushed, table, sourcePath));
         }
         if (buffer.length > 0) {
             await client.batchPut(table.name, buffer);
@@ -100,5 +114,5 @@ class UploadImpl implements UploadAbstraction.Interface {
 
 export const Upload = UploadAbstraction.createImplementation({
     implementation: UploadImpl,
-    dependencies: [Logger, Paths, DynamoDbClientFactory, NdJsonLineAccumulator]
+    dependencies: [Logger, Paths, DynamoDbClientFactory, NdJsonLineAccumulator, RecordModifier]
 });

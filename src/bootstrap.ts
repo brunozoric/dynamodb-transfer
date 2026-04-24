@@ -9,6 +9,7 @@ import { DownloadFeature } from "~/features/Download/index.ts";
 import { UploadFeature } from "~/features/Upload/index.ts";
 import { ParseNdJsonErrorHandlerFeature } from "~/features/ParseNdJsonErrorHandler/index.ts";
 import { NdJsonLineAccumulatorFeature } from "~/features/NdJsonLineAccumulator/index.ts";
+import { RecordModifierFeature } from "~/features/RecordModifier/index.ts";
 import { CliFeature } from "~/features/Cli/index.ts";
 import createExtensions from "@extensions/index.ts";
 
@@ -22,6 +23,7 @@ export async function bootstrap(): Promise<Container> {
     UploadFeature.register(container);
     ParseNdJsonErrorHandlerFeature.register(container);
     NdJsonLineAccumulatorFeature.register(container);
+    RecordModifierFeature.register(container);
 
     await createExtensions({ container });
 
