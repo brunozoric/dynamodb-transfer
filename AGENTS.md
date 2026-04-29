@@ -6,14 +6,35 @@ You are working on **`dynamodb-extract`**, an interactive CLI that downloads Dyn
 
 1. `README.md` — user-facing: what the tool does, how to set up `config.ts`, where downloads go.
 2. `docs/webiny-di-guide.md` — conventions for `@webiny/di`. Critical if you're touching any DI code. Read §1 and §6 in full.
-3. `docs/superpowers/specs/` — historical design docs (kept for context; work already landed).
-4. `docs/superpowers/plans/` — historical plans matching the specs.
+3. `docs/superpowers/specs/` and `docs/superpowers/plans/` — historical design docs and plans; kept for context, work already landed.
 
 `docs/webiny-di-guide.md` §6 is the canonical reference for feature folder layout: five file templates (`abstractions/FeatureName.ts`, `abstractions/index.ts`, `FeatureName.ts`, `feature.ts`, `index.ts`) plus the explanation of module-level `I`-interfaces + namespace facade.
 
 ## Current state
 
-DI refactor is complete. `src/features/{Config,AwsClient,Download,Upload}/` each expose an abstraction + feature; `src/bootstrap.ts` is the composition root; `src/index.ts` is a thin CLI entry. Legacy directories (`src/aws/`, `src/commands/`, `src/config/`) are gone. 13 vitest tests run against dynalite.
+DI refactor is complete. `src/bootstrap.ts` is the composition root; `src/index.ts` is a thin CLI entry. Legacy directories (`src/aws/`, `src/commands/`, `src/config/`) are gone. 65 vitest tests run against dynalite.
+
+### Feature inventory (`src/features/`)
+
+| Feature | What it does |
+|---|---|
+| `Cli` | Top-level interactive loop — prompts for action, delegates to Download/Upload |
+| `Config` | Loads + validates + resolves per-table defaults from `config.ts` |
+| `DynamoDbClient` | `DynamoDbClient` (scan/batchPut with retry) + `DynamoDbClientFactory` (creates per-table clients) |
+| `Download` | Scans a table and writes NDJSON or JSON to disk. **Parallel-segment path writes each segment to its own temp file (`destPath.seg{N}`) then concatenates them in order.** See below. |
+| `Upload` | Reads NDJSON or JSON from disk and batch-writes to a table; supports resume-from-line |
+| `Logger` | Pino-backed logger; level + optional file sink configurable via env vars |
+| `NdJsonLineAccumulator` | Handles NDJSON lines split across multiple readline lines (embedded newlines in values) |
+| `ParseNdJsonErrorHandler` | Error policy for unparseable NDJSON lines (skip or substitute) |
+| `Paths` | File-path helpers — output paths, format detection from extension |
+| `Prompter` | `enquirer`-backed interactive prompts |
+| `RecordModifier` | Per-table hook for transforming records before upload |
+| `Session` | Persists last-used table / file between runs |
+| `WriteLogMapper` | Maps a written record to a log-friendly payload (keys only by default) |
+
+### Download — parallel segment temp files
+
+When `segments > 1`, `Download` fans out to N workers that each write to `destPath.seg{N}`. After all workers finish, `concatenateSegments` pipes them sequentially into `destPath` and `deleteSegmentFiles` cleans up in `finally`. This eliminates the shared-stream concurrency issue that could interleave writes. Memory usage is bounded regardless of file size (chunk-based streaming throughout).
 
 ## Critical conventions (non-negotiable)
 
@@ -37,7 +58,7 @@ yarn start          # launch the CLI
 yarn ts-check       # TypeScript compile check (no emit)
 yarn format:fix     # apply oxfmt formatter (run before committing)
 yarn format:check   # assert formatted (read-only)
-yarn test           # vitest run + coverage (added by Task 1)
+yarn test           # vitest run + coverage
 yarn test:watch     # vitest watch (no coverage)
 ```
 
