@@ -99,9 +99,24 @@ class DownloadImpl implements DownloadAbstraction.Interface {
     private pipeSegment(sourcePath: string, dest: WriteStream): Promise<void> {
         return new Promise((resolve, reject) => {
             const source = createReadStream(sourcePath);
+
+            const onSourceError = (err: Error): void => {
+                dest.off("error", onDestError);
+                reject(err);
+            };
+            const onDestError = (err: Error): void => {
+                source.off("error", onSourceError);
+                source.destroy();
+                reject(err);
+            };
+
+            dest.once("error", onDestError);
             source.pipe(dest, { end: false });
-            source.once("end", resolve);
-            source.once("error", reject);
+            source.once("end", () => {
+                dest.off("error", onDestError);
+                resolve();
+            });
+            source.once("error", onSourceError);
         });
     }
 
