@@ -1,4 +1,5 @@
-import { createWriteStream, writeFileSync } from "node:fs";
+import { createReadStream, createWriteStream, writeFileSync } from "node:fs";
+import { unlink } from "node:fs/promises";
 import type { WriteStream } from "node:fs";
 import { Logger } from "~/features/Logger/index.ts";
 import { DynamoDbClientFactory } from "~/features/DynamoDbClient/index.ts";
@@ -48,34 +49,70 @@ class DownloadImpl implements DownloadAbstraction.Interface {
         destPath: string,
         segments: number
     ): Promise<void> {
-        const stream = createWriteStream(destPath);
         let total = 0;
+        const segmentPaths = Array.from({ length: segments }, (_, i) => `${destPath}.seg${i}`);
 
-        const worker = async (segment: number): Promise<void> => {
+        const worker = async (segmentPath: string, segment: number): Promise<void> => {
+            const stream = createWriteStream(segmentPath);
             let segmentCount = 0;
-            for await (const item of client.scan(tableName, {
-                segment,
-                totalSegments: segments
-            })) {
-                await this.writeLine(stream, JSON.stringify(item) + "\n");
-                segmentCount++;
-                total++;
-                if (segmentCount % 1000 === 0) {
-                    this.logger.info(
-                        segments > 1
-                            ? `Seg ${segment}: ${segmentCount} items (total ${total})`
-                            : `Scanned ${total} items...`
-                    );
+            try {
+                for await (const item of client.scan(tableName, {
+                    segment,
+                    totalSegments: segments
+                })) {
+                    await this.writeLine(stream, JSON.stringify(item) + "\n");
+                    segmentCount++;
+                    total++;
+                    if (segmentCount % 1000 === 0) {
+                        this.logger.info(
+                            segments > 1
+                                ? `Seg ${segment}: ${segmentCount} items (total ${total})`
+                                : `Scanned ${total} items...`
+                        );
+                    }
                 }
+            } finally {
+                await this.closeStream(stream);
             }
         };
 
         try {
-            await Promise.all(Array.from({ length: segments }, (_, i) => worker(i)));
+            await Promise.all(segmentPaths.map((segPath, i) => worker(segPath, i)));
+            await this.concatenateSegments(segmentPaths, destPath);
         } finally {
-            await this.closeStream(stream);
+            await this.deleteSegmentFiles(segmentPaths);
         }
         this.logger.done(`Exported ${total} items to ${destPath}`);
+    }
+
+    private async concatenateSegments(segmentPaths: string[], destPath: string): Promise<void> {
+        const dest = createWriteStream(destPath);
+        try {
+            for (const segPath of segmentPaths) {
+                await this.pipeSegment(segPath, dest);
+            }
+        } finally {
+            await this.closeStream(dest);
+        }
+    }
+
+    private pipeSegment(sourcePath: string, dest: WriteStream): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const source = createReadStream(sourcePath);
+            source.pipe(dest, { end: false });
+            source.once("end", resolve);
+            source.once("error", reject);
+        });
+    }
+
+    private async deleteSegmentFiles(paths: string[]): Promise<void> {
+        for (const segPath of paths) {
+            try {
+                await unlink(segPath);
+            } catch {
+                // file may not exist if the worker failed before creating it
+            }
+        }
     }
 
     private writeLine(stream: WriteStream, line: string): Promise<void> {
