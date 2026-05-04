@@ -122,10 +122,10 @@ describe("Download", () => {
     const tableName = await createTestTable();
     tablesToClean.push(tableName);
     await putTestItems(tableName, [
-      { PK: "lf",   body: "before\nafter" },
+      { PK: "lf", body: "before\nafter" },
       { PK: "crlf", body: "before\r\nafter" },
-      { PK: "ls",   body: "before after" },
-      { PK: "ps",   body: "before after" }
+      { PK: "ls", body: "before after" },
+      { PK: "ps", body: "before after" }
     ]);
     const dir = makeTmpDir();
     dirsToClean.push(dir);
