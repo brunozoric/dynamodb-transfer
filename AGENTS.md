@@ -16,21 +16,21 @@ DI refactor is complete. `src/bootstrap.ts` is the composition root; `src/index.
 
 ### Feature inventory (`src/features/`)
 
-| Feature | What it does |
-|---|---|
-| `Cli` | Top-level interactive loop — prompts for action, delegates to Download/Upload |
-| `Config` | Loads + validates + resolves per-table defaults from `config.ts` |
-| `DynamoDbClient` | `DynamoDbClient` (scan/batchPut with retry) + `DynamoDbClientFactory` (creates per-table clients) |
-| `Download` | Scans a table and writes NDJSON or JSON to disk. **Parallel-segment path writes each segment to its own temp file (`destPath.seg{N}`) then concatenates them in order.** See below. |
-| `Upload` | Reads NDJSON or JSON from disk and batch-writes to a table; supports resume-from-line |
-| `Logger` | Pino-backed logger; level + optional file sink configurable via env vars |
-| `NdJsonLineAccumulator` | Handles NDJSON lines split across multiple readline lines (embedded newlines in values) |
-| `ParseNdJsonErrorHandler` | Error policy for unparseable NDJSON lines (skip or substitute) |
-| `Paths` | File-path helpers — output paths, format detection from extension |
-| `Prompter` | `enquirer`-backed interactive prompts |
-| `RecordModifier` | Per-table hook for transforming records before upload |
-| `Session` | Persists last-used table / file between runs |
-| `WriteLogMapper` | Maps a written record to a log-friendly payload (keys only by default) |
+| Feature                   | What it does                                                                                                                                                                        |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Cli`                     | Top-level interactive loop — prompts for action, delegates to Download/Upload                                                                                                       |
+| `Config`                  | Loads + validates + resolves per-table defaults from `config.ts`                                                                                                                    |
+| `DynamoDbClient`          | `DynamoDbClient` (scan/batchPut with retry) + `DynamoDbClientFactory` (creates per-table clients)                                                                                   |
+| `Download`                | Scans a table and writes NDJSON or JSON to disk. **Parallel-segment path writes each segment to its own temp file (`destPath.seg{N}`) then concatenates them in order.** See below. |
+| `Upload`                  | Reads NDJSON or JSON from disk and batch-writes to a table; supports resume-from-line                                                                                               |
+| `Logger`                  | Pino-backed logger; level + optional file sink configurable via env vars                                                                                                            |
+| `NdJsonLineAccumulator`   | Handles NDJSON lines split across multiple readline lines (embedded newlines in values)                                                                                             |
+| `ParseNdJsonErrorHandler` | Error policy for unparseable NDJSON lines (skip or substitute)                                                                                                                      |
+| `Paths`                   | File-path helpers — output paths, format detection from extension                                                                                                                   |
+| `Prompter`                | `enquirer`-backed interactive prompts                                                                                                                                               |
+| `RecordModifier`          | Per-table hook for transforming records before upload                                                                                                                               |
+| `Session`                 | Persists last-used table / file between runs                                                                                                                                        |
+| `WriteLogMapper`          | Maps a written record to a log-friendly payload (keys only by default)                                                                                                              |
 
 ### Download — parallel segment temp files
 
