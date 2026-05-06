@@ -17,7 +17,7 @@ class SessionImpl implements SessionAbstraction.Interface {
     }
 
     public snapshot(): Readonly<Partial<SessionAbstraction.Data>> {
-        return { ...this.data };
+        return structuredClone(this.data);
     }
 }
 
