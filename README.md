@@ -19,7 +19,7 @@ Interactive CLI for downloading and uploading DynamoDB tables.
    cp config.example.ts config.ts
    ```
 
-   `config.ts` is gitignored; your changes stay local.
+   `config.ts` is gitignored; your changes stay local. Without a `config.ts` the tool falls back to `config.default.ts`, which has a single placeholder table.
 
    Each table entry needs:
    - `name` — the real DynamoDB table name.

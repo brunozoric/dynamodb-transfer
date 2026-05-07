@@ -12,7 +12,9 @@ You are working on **`dynamodb-extract`**, an interactive CLI that downloads Dyn
 
 ## Current state
 
-DI refactor is complete. `src/bootstrap.ts` is the composition root; `src/index.ts` is a thin CLI entry. Legacy directories (`src/aws/`, `src/commands/`, `src/config/`) are gone. 65 vitest tests run against dynalite.
+DI refactor is complete. `src/bootstrap.ts` is the composition root; `src/index.ts` is a thin CLI entry. Legacy directories (`src/aws/`, `src/commands/`, `src/config/`) are gone. 101 vitest tests run against dynalite.
+
+CI runs on every push/PR via `.github/workflows/ci.yml`: `yarn --immutable`, `yarn npm audit --severity high`, `yarn format:check`, `yarn lint`, `yarn adio`, `yarn ts-check`, `yarn test`. Actions are pinned to commit SHAs (v6). The workflow has `permissions: read-all` at the top level and `contents: read` on the job. Dependabot is configured at `.github/dependabot.yml` (weekly, npm + GitHub Actions, no major-version bumps, aws-sdk and dev-tooling grouped). Coverage thresholds are enforced in `vitest.config.ts` (65% statements/lines, 45% branches, 68% functions). The `.adiorc.js` traverse callback guards against `undefined path` and ignores three known false positives: `@extensions/index.ts` (local path alias), `@aws-sdk/types` (transitive type-only dep), `tsx` (used via `yarn start` script, not source imports).
 
 ### Feature inventory (`src/features/`)
 
@@ -73,7 +75,7 @@ Project uses Yarn v4 (Berry) — `yarn install` sets that up via a `postinstall`
 
 ## Things not to do
 
-- Don't commit `config.ts` — it's gitignored and per-user. `config.example.ts` is the committed template.
+- Don't commit `config.ts` — it's gitignored and per-user. `config.example.ts` is the committed template. `config.default.ts` is the committed fallback used when no `config.ts` exists (loaded via `new URL("../config.js", import.meta.url).href` so TypeScript does not statically resolve it); don't modify it without a clear reason.
 - Don't commit files under `./data/` — also gitignored. That folder holds large exported tables.
 - Don't add fallback handling / retries / error wrapping for scenarios that can't happen. Only validate at system boundaries.
 - Don't "improve" type signatures on your own initiative with extra `as` casts or redundant annotations. The plan's code is already type-correct under strict mode.
