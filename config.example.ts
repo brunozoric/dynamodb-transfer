@@ -1,6 +1,6 @@
 import { defineConfig } from "~/index.ts";
 
-export default defineConfig(async ({ container }) => {
+export default defineConfig(async ({ container: _container }) => {
   // Register custom services here. Example:
   // import { ParseNdJsonErrorHandler } from "./src/index.js";
   // container.registerInstance(ParseNdJsonErrorHandler, new MyHandler());

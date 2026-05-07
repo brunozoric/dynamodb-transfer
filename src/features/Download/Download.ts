@@ -100,13 +100,14 @@ class DownloadImpl implements DownloadAbstraction.Interface {
         return new Promise((resolve, reject) => {
             const source = createReadStream(sourcePath);
 
-            const onSourceError = (err: Error): void => {
-                dest.off("error", onDestError);
-                reject(err);
-            };
+            let onSourceError!: (err: Error) => void;
             const onDestError = (err: Error): void => {
                 source.off("error", onSourceError);
                 source.destroy();
+                reject(err);
+            };
+            onSourceError = (err: Error): void => {
+                dest.off("error", onDestError);
                 reject(err);
             };
 
@@ -141,13 +142,14 @@ class DownloadImpl implements DownloadAbstraction.Interface {
                 resolve();
                 return;
             }
-            const onDrain = (): void => {
-                stream.off("error", onError);
-                resolve();
-            };
+            let onDrain!: () => void;
             const onError = (err: Error): void => {
                 stream.off("drain", onDrain);
                 reject(err);
+            };
+            onDrain = (): void => {
+                stream.off("error", onError);
+                resolve();
             };
             stream.once("drain", onDrain);
             stream.once("error", onError);
