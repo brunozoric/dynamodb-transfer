@@ -35,14 +35,17 @@ interface LoadedConfig {
 
 async function readRawConfig(): Promise<RawConfigResult | null> {
     let factory: ConfigFactory;
+    const userConfigUrl = new URL("../config.js", import.meta.url).href;
     try {
-        const mod = await import("../config.js");
-        factory = mod.default as ConfigFactory;
+        const mod = (await import(userConfigUrl)) as { default: ConfigFactory };
+        factory = mod.default;
     } catch (err) {
         if (err instanceof Error && "code" in err && err.code === "ERR_MODULE_NOT_FOUND") {
-            throw new ConfigError("file not found. Copy config.example.ts to config.ts and edit.");
+            const defaultMod = await import("../config.default.js");
+            factory = defaultMod.default as ConfigFactory;
+        } else {
+            throw err;
         }
-        throw err;
     }
 
     const raw = await factory({ container: new Container() });

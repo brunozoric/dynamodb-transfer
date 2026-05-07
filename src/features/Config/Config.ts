@@ -11,12 +11,14 @@ function formatIssue(issue: ZodIssue): string {
 }
 
 async function importUserConfig(): Promise<unknown> {
+    const userConfigUrl = new URL("../../../config.js", import.meta.url).href;
     try {
-        const mod = await import("../../../config.js");
+        const mod = (await import(userConfigUrl)) as { default: unknown };
         return mod.default;
     } catch (err) {
         if (err instanceof Error && "code" in err && err.code === "ERR_MODULE_NOT_FOUND") {
-            throw new ConfigError("file not found. Copy config.example.ts to config.ts and edit.");
+            const defaultMod = await import("../../../config.default.js");
+            return defaultMod.default;
         }
         throw err;
     }
