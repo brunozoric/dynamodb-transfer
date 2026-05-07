@@ -16,6 +16,13 @@ export interface TestContainerOptions {
   tables?: Config.ResolvedTable[];
 }
 
+function makeFakeConfig(tables: Config.ResolvedTable[]): Config.Interface {
+  return {
+    load: async () => tables,
+    logSettings: () => null
+  };
+}
+
 export function createTestContainer(options: TestContainerOptions = {}): Container {
   const container = new Container();
   LoggerFeature.register(container, { logLevel: "silent", json: false });
@@ -34,11 +41,4 @@ export function createTestContainer(options: TestContainerOptions = {}): Contain
     container.registerInstance(Config, makeFakeConfig(options.tables));
   }
   return container;
-}
-
-function makeFakeConfig(tables: Config.ResolvedTable[]): Config.Interface {
-  return {
-    load: async () => tables,
-    logSettings: () => null
-  };
 }

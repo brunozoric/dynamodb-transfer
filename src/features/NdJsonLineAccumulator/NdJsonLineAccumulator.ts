@@ -18,7 +18,7 @@ export class NdJsonLineAccumulatorImpl implements NdJsonLineAccumulatorAbstracti
         if (this.pending.length === 0) {
             try {
                 return JSON.parse(line) as Record<string, unknown>;
-            } catch (_error) {
+            } catch {
                 this.logger.debug(`Failed to parse line, accumulating`);
                 this.pending.push(line);
                 return null;
@@ -31,7 +31,7 @@ export class NdJsonLineAccumulatorImpl implements NdJsonLineAccumulatorAbstracti
             this.pending = [];
             this.logger.debug(`Newline-joined accumulation parsed successfully`);
             return record;
-        } catch (_error) {
+        } catch {
             this.logger.debug(
                 `Newline-joined accumulation did not parse, trying empty-string join`
             );
@@ -43,7 +43,7 @@ export class NdJsonLineAccumulatorImpl implements NdJsonLineAccumulatorAbstracti
             this.pending = [];
             this.logger.debug(`Empty-string-joined accumulation parsed successfully`);
             return record;
-        } catch (_error) {
+        } catch {
             this.logger.debug(`Empty-string-joined accumulation did not parse, trying line alone`);
         }
 
@@ -64,7 +64,7 @@ export class NdJsonLineAccumulatorImpl implements NdJsonLineAccumulatorAbstracti
                 `Line parsed successfully after discarding ${discardCount} accumulated line(s)`
             );
             return record;
-        } catch (_error) {
+        } catch {
             this.logger.debug(
                 `All strategies failed, continuing to accumulate (${this.pending.length + 1} lines pending)`
             );

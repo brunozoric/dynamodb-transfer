@@ -11,6 +11,8 @@
     "ts-check": "tsc --noEmit",
     "test": "vitest run --coverage",
     "test:watch": "vitest",
+    "lint": "oxlint --deny-warnings",
+    "lint:fix": "oxlint --fix",
     "format:fix": "oxfmt 'src/**/*.{ts,js}' 'extensions/**/*.{ts,js}' '__tests__/**/*.ts' 'vitest.config.ts' '.adiorc.js' 'setup-yarnrc.js' 'tsconfig.json' 'config.**'",
     "format:check": "oxfmt --check",
     "postinstall": "yarn set version berry"
@@ -36,6 +38,7 @@
     "adio": "^3.0.0",
     "dynalite": "^4.0.0",
     "oxfmt": "^0.48.0",
+    "oxlint": "^1.63.0",
     "vitest": "^4.1.5"
   },
   "engines": {
