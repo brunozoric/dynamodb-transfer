@@ -3,6 +3,9 @@ export default {
     plugins: ["jsx", "classProperties", "dynamicImport", "throwExpressions", "typescript"]
   },
   traverse: ({ path, push }) => {
+    if (!path) {
+      return;
+    }
     const { node } = path;
     if (node.type !== "CallExpression") {
       return;
@@ -15,8 +18,8 @@ export default {
     }
   },
   ignore: {
-    src: ["~tests", "~"],
-    dependencies: ["typescript", "pino-pretty"],
+    src: ["~tests", "~", "@extensions/index.ts", "@aws-sdk/types"],
+    dependencies: ["typescript", "pino-pretty", "tsx"],
     devDependencies: true,
     peerDependencies: true
   },
