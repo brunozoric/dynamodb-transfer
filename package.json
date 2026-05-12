@@ -9,7 +9,8 @@
   "scripts": {
     "start": "tsx src/cli.ts",
     "ts-check": "tsc --noEmit",
-    "test": "vitest run --coverage",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "lint": "oxlint --deny-warnings",
     "lint:fix": "oxlint --fix",
@@ -18,10 +19,10 @@
     "postinstall": "yarn set version berry"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.1043.0",
-    "@aws-sdk/credential-providers": "^3.1043.0",
-    "@aws-sdk/lib-dynamodb": "^3.1043.0",
-    "@inquirer/prompts": "^8.4.2",
+    "@aws-sdk/client-dynamodb": "^3.1045.0",
+    "@aws-sdk/credential-providers": "^3.1045.0",
+    "@aws-sdk/lib-dynamodb": "^3.1045.0",
+    "@inquirer/prompts": "^8.4.3",
     "@webiny/di": "^0.2.3",
     "dotenv": "^17.4.2",
     "pino": "^10.3.1",
@@ -32,14 +33,14 @@
   },
   "devDependencies": {
     "@aws-sdk/util-dynamodb": "^3.996.2",
-    "@smithy/node-http-handler": "^4.6.1",
-    "@types/node": "^24.12.2",
-    "@vitest/coverage-v8": "^4.1.5",
+    "@smithy/node-http-handler": "^4.7.1",
+    "@types/node": "^24.12.4",
+    "@vitest/coverage-v8": "^4.1.6",
     "adio": "^3.0.0",
     "dynalite": "^4.0.0",
-    "oxfmt": "^0.48.0",
-    "oxlint": "^1.63.0",
-    "vitest": "^4.1.5"
+    "oxfmt": "^0.49.0",
+    "oxlint": "^1.64.0",
+    "vitest": "^4.1.6"
   },
   "engines": {
     "node": ">=24.0.0"
