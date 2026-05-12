@@ -1,4 +1,4 @@
-# dynamodb-extract
+# dynamodb-transfer
 
 Interactive CLI for downloading and uploading DynamoDB tables.
 
