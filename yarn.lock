@@ -1473,6 +1473,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@smithy/core@npm:^3.24.6":
+  version: 3.24.6
+  resolution: "@smithy/core@npm:3.24.6"
+  dependencies:
+    "@aws-crypto/crc32": "npm:5.2.0"
+    "@smithy/types": "npm:^4.14.3"
+    tslib: "npm:^2.6.2"
+  checksum: 10/c37a2bc247d19612e6b5cc6ce9dea2436d94b2133869d35711fb4a964e604cb2eec295ea563997a2be237a85430c24eed4c71159cf29d7191fb36ff6787dadb1
+  languageName: node
+  linkType: hard
+
 "@smithy/credential-provider-imds@npm:^4.3.6":
   version: 4.3.6
   resolution: "@smithy/credential-provider-imds@npm:4.3.6"
@@ -1515,6 +1526,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@smithy/node-http-handler@npm:^4.7.7":
+  version: 4.7.7
+  resolution: "@smithy/node-http-handler@npm:4.7.7"
+  dependencies:
+    "@smithy/core": "npm:^3.24.6"
+    "@smithy/types": "npm:^4.14.3"
+    tslib: "npm:^2.6.2"
+  checksum: 10/7f178a1461d6c36fa00007ad66c1f6ff75d4b03e16cfbdfba2c7eea82efcbe2931e1c73810c941fd62f643acaa1c67b06343b445576e2063dfdf4868bc87682e
+  languageName: node
+  linkType: hard
+
 "@smithy/signature-v4@npm:^5.4.5":
   version: 5.4.5
   resolution: "@smithy/signature-v4@npm:5.4.5"
@@ -1532,6 +1554,15 @@ __metadata:
   dependencies:
     tslib: "npm:^2.6.2"
   checksum: 10/bd5b81b5b35f129e443e571adb2d856fdeb4e216966272600635c6b5ec951b8392e63f977d1464cfe7c0e0d3f6c931730720803933f97891f2a2aa2c76cde15f
+  languageName: node
+  linkType: hard
+
+"@smithy/types@npm:^4.14.3":
+  version: 4.14.3
+  resolution: "@smithy/types@npm:4.14.3"
+  dependencies:
+    tslib: "npm:^2.6.2"
+  checksum: 10/fd2131c6f9263b139f9ca1cf7c492454809b60fff516cc7c59bc4713c9931c57dcd353746ff5b8f7db4e8458628f3026e3e4af5ccd5bf91250365b23f15f4c78
   languageName: node
   linkType: hard
 
@@ -1991,7 +2022,7 @@ __metadata:
     "@aws-sdk/lib-dynamodb": "npm:^3.1057.0"
     "@aws-sdk/util-dynamodb": "npm:^3.996.2"
     "@inquirer/prompts": "npm:^8.5.1"
-    "@smithy/node-http-handler": "npm:^4.7.5"
+    "@smithy/node-http-handler": "npm:^4.7.7"
     "@types/node": "npm:^24.12.4"
     "@vitest/coverage-v8": "npm:^4.1.7"
     "@webiny/di": "npm:^1.0.1"
