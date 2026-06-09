@@ -36,7 +36,7 @@
     "@smithy/node-http-handler": "^4.7.5",
     "@types/node": "^24.12.4",
     "@vitest/coverage-v8": "^4.1.7",
-    "adio": "^3.0.0",
+    "adio": "^3.0.1",
     "dynalite": "^4.0.0",
     "oxfmt": "^0.52.0",
     "oxlint": "^1.67.0",
