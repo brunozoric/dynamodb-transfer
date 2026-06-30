@@ -1764,12 +1764,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@webiny/di@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "@webiny/di@npm:1.0.1"
+"@webiny/di@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "@webiny/di@npm:1.0.2"
   dependencies:
     reflect-metadata: "npm:^0.2.2"
-  checksum: 10/61e017b44608d1479d1d5cf8ed923e75c1eebb02f65aee858fe040adbc88447924618e8350c25d62a33fefb350bf7a21b9f4b22fb7c872b2514bb7a92757d7b9
+  checksum: 10/50c98ed6a0c00bca21e1f2a03b78ac7f221b0bacf5e33683dd51bfd2462ccd9787ec59cb540f487e3d1cafc0399a026dfd68a560a60f9b7c350c66152bcc6f0d
   languageName: node
   linkType: hard
 
@@ -2055,7 +2055,7 @@ __metadata:
     "@smithy/node-http-handler": "npm:^4.8.1"
     "@types/node": "npm:^24.13.2"
     "@vitest/coverage-v8": "npm:^4.1.9"
-    "@webiny/di": "npm:^1.0.1"
+    "@webiny/di": "npm:^1.0.2"
     adio: "npm:^3.0.1"
     dotenv: "npm:^17.4.2"
     dynalite: "npm:^4.0.0"
