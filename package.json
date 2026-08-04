@@ -18,9 +18,9 @@
     "format:check": "oxfmt --check"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.1090.0",
-    "@aws-sdk/credential-providers": "^3.1090.0",
-    "@aws-sdk/lib-dynamodb": "^3.1090.0",
+    "@aws-sdk/client-dynamodb": "^3.1101.0",
+    "@aws-sdk/credential-providers": "^3.1101.0",
+    "@aws-sdk/lib-dynamodb": "^3.1101.0",
     "@inquirer/prompts": "^8.5.2",
     "@webiny/di": "^1.0.2",
     "dotenv": "^17.4.2",
@@ -32,13 +32,13 @@
   },
   "devDependencies": {
     "@aws-sdk/util-dynamodb": "^3.996.7",
-    "@smithy/node-http-handler": "^4.9.7",
+    "@smithy/node-http-handler": "^4.9.13",
     "@types/node": "^24.13.3",
     "@vitest/coverage-v8": "^4.1.10",
     "adio": "^3.0.1",
     "dynalite": "^4.0.0",
-    "oxfmt": "^0.59.0",
-    "oxlint": "^1.74.0",
+    "oxfmt": "^0.61.0",
+    "oxlint": "^1.76.0",
     "vitest": "^4.1.10"
   },
   "engines": {
