@@ -18,9 +18,9 @@
     "format:check": "oxfmt --check"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.1101.0",
-    "@aws-sdk/credential-providers": "^3.1101.0",
-    "@aws-sdk/lib-dynamodb": "^3.1101.0",
+    "@aws-sdk/client-dynamodb": "^3.1106.0",
+    "@aws-sdk/credential-providers": "^3.1106.0",
+    "@aws-sdk/lib-dynamodb": "^3.1106.0",
     "@inquirer/prompts": "^8.5.2",
     "@webiny/di": "^1.0.2",
     "dotenv": "^17.4.2",
