@@ -40,9 +40,9 @@ class UploadImpl implements UploadAbstraction.Interface {
 
     private extractKeys(record: Record<string, unknown>): Record<string, unknown> {
         const keys: Record<string, unknown> = {};
-        for (const [k, v] of Object.entries(record)) {
-            if (k === "PK" || k === "SK" || /^GSI\d+_(PK|SK)$/.test(k)) {
-                keys[k] = v;
+        for (const [key, value] of Object.entries(record)) {
+            if (key === "PK" || key === "SK" || /^GSI/.test(key) || "index" === key) {
+                keys[key] = value;
             }
         }
         return keys;
