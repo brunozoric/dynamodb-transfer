@@ -1732,12 +1732,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@webiny/di@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "@webiny/di@npm:1.0.2"
+"@webiny/di@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@webiny/di@npm:1.1.0"
   dependencies:
     reflect-metadata: "npm:^0.2.2"
-  checksum: 10/50c98ed6a0c00bca21e1f2a03b78ac7f221b0bacf5e33683dd51bfd2462ccd9787ec59cb540f487e3d1cafc0399a026dfd68a560a60f9b7c350c66152bcc6f0d
+  checksum: 10/dca5eea0ef4f80aebfacdca450e7e8384a07e2fb18d1e89d6c030260dc07f5c7b4ceb70e845c1f46b5ac04d57dd1c7d39e9d92262f18d7517b20248cca72582b
   languageName: node
   linkType: hard
 
@@ -1791,13 +1791,13 @@ __metadata:
   linkType: hard
 
 "ast-v8-to-istanbul@npm:^1.0.5":
-  version: 1.0.5
-  resolution: "ast-v8-to-istanbul@npm:1.0.5"
+  version: 1.0.6
+  resolution: "ast-v8-to-istanbul@npm:1.0.6"
   dependencies:
     "@jridgewell/trace-mapping": "npm:^0.3.31"
     estree-walker: "npm:^3.0.3"
     js-tokens: "npm:^10.0.0"
-  checksum: 10/da404c933beb1d3db94158e07c8d87aa86103775e0fb6f9a85f930d5c8327320b5a2099db4cc9d4448c421285a614fe9f73ef7d76dbae589ce815e636a0f1542
+  checksum: 10/30acf9b07fff7dce9c2093b8084e971c6e4f28e5c6ad78c9fd8871d8afcfa301e8d6dc2ae6283cf8a403174274f7b77c668c84258e7e274d97f45e9f4f87bbe9
   languageName: node
   linkType: hard
 
@@ -2009,7 +2009,7 @@ __metadata:
     "@smithy/node-http-handler": "npm:^4.12.1"
     "@types/node": "npm:^26.4.1"
     "@vitest/coverage-v8": "npm:^5.0.0"
-    "@webiny/di": "npm:^1.0.2"
+    "@webiny/di": "npm:^1.1.0"
     adio: "npm:^3.0.1"
     dotenv: "npm:^17.4.2"
     dynalite: "npm:^4.0.0"

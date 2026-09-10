@@ -12,9 +12,9 @@ You are working on **`dynamodb-extract`**, an interactive CLI that downloads Dyn
 
 ## Current state
 
-DI refactor is complete. `src/bootstrap.ts` is the composition root; `src/index.ts` is a thin CLI entry. Legacy directories (`src/aws/`, `src/commands/`, `src/config/`) are gone. 101 vitest tests run against dynalite.
+DI refactor is complete. `src/bootstrap.ts` is the composition root; `src/cli.ts` is the CLI entry point. `src/index.ts` is the public API barrel export. Legacy directories (`src/aws/`, `src/commands/`, `src/config/`) are gone. 101 vitest tests run against dynalite.
 
-CI runs on every push/PR via `.github/workflows/ci.yml`: `yarn --immutable`, `yarn npm audit --severity high`, `yarn format:check`, `yarn lint`, `yarn adio`, `yarn ts-check`, `yarn test`. Actions are pinned to commit SHAs (v6). The workflow has `permissions: read-all` at the top level and `contents: read` on the job. Dependabot is configured at `.github/dependabot.yml` (weekly, npm + GitHub Actions, no major-version bumps, aws-sdk and dev-tooling grouped). Coverage thresholds are enforced in `vitest.config.ts` (65% statements/lines, 45% branches, 68% functions). The `.adiorc.js` traverse callback guards against `undefined path` and ignores three known false positives: `@extensions/index.ts` (local path alias), `@aws-sdk/types` (transitive type-only dep), `tsx` (used via `yarn start` script, not source imports).
+CI runs on every push/PR via `.github/workflows/ci.yml`: `yarn --immutable`, `yarn npm audit --severity high`, `yarn format:check`, `yarn lint`, `yarn adio`, `yarn ts-check`, `yarn test`. Actions are pinned to commit SHAs (v6). The workflow has `permissions: {}` (deny-by-default) at the top level and `contents: read` on the job. Dependabot is configured at `.github/dependabot.yml` (weekly, npm + GitHub Actions, no major-version bumps, aws-sdk and dev-tooling grouped). Coverage thresholds are enforced in `vitest.config.ts` (65% statements/lines, 45% branches, 68% functions). The `.adiorc.js` traverse callback guards against `undefined path` and ignores false positives: in `src` — `~tests`, `~` (path alias prefixes), `@extensions/index.ts` (local path alias), `@aws-sdk/types` (transitive type-only dep); in `dependencies` — `typescript`, `pino-pretty`, `tsx` (dev tooling used via scripts, not source imports).
 
 ### Feature inventory (`src/features/`)
 
@@ -29,7 +29,7 @@ CI runs on every push/PR via `.github/workflows/ci.yml`: `yarn --immutable`, `ya
 | `NdJsonLineAccumulator`   | Handles NDJSON lines split across multiple readline lines (embedded newlines in values)                                                                                             |
 | `ParseNdJsonErrorHandler` | Error policy for unparseable NDJSON lines (skip or substitute)                                                                                                                      |
 | `Paths`                   | File-path helpers — output paths, format detection from extension                                                                                                                   |
-| `Prompter`                | `enquirer`-backed interactive prompts                                                                                                                                               |
+| `Prompter`                | `@inquirer/prompts`-backed interactive prompts                                                                                                                                      |
 | `RecordModifier`          | Per-table hook for transforming records before upload                                                                                                                               |
 | `Session`                 | Persists last-used table / file between runs                                                                                                                                        |
 | `WriteLogMapper`          | Maps a written record to a log-friendly payload (keys only by default)                                                                                                              |
@@ -64,12 +64,12 @@ yarn test           # vitest run + coverage
 yarn test:watch     # vitest watch (no coverage)
 ```
 
-Project uses Yarn v4 (Berry) — `yarn install` sets that up via a `postinstall` hook. Node 24 ESM. TypeScript with `nodenext`, `strict`, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`, `verbatimModuleSyntax`.
+Project uses Yarn v4 (Berry) — declared via `packageManager` in `package.json`; activate with `corepack enable`. Node 24 ESM. TypeScript with `nodenext`, `strict`, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`, `verbatimModuleSyntax`.
 
 ## Asking the user
 
 - **One question at a time**, with your recommended answer. Don't batch questions — the user has told agents this explicitly.
-- **For design-like decisions**, use `superpowers:brainstorming` or invoke the project-local `grill-me` skill (in `.claude/skills/grill-me/`) for relentless one-at-a-time decision-tree walkthroughs.
+- **For design-like decisions**, use `superpowers:brainstorming` or invoke the project-local `grill-me` skill (in `.agents/skills/grill-me/`) for relentless one-at-a-time decision-tree walkthroughs.
 - **For implementation from a spec**, use `superpowers:writing-plans` then `subagent-driven-development` or `executing-plans`.
 - **Before claiming work is complete**, use `superpowers:verification-before-completion` — run `yarn ts-check && yarn format:check && yarn test` and confirm output before making success claims.
 
