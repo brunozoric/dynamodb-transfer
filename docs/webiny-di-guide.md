@@ -64,9 +64,9 @@ const child = container.createChildContainer();     // Scoped overrides
 
 **Key methods:**
 
-- `register(ImplClass)` — registers an Implementation class (one created via `Abstraction.createImplementation`). Returns a `RegistrationBuilder` — chain `.inSingletonScope()` for singleton lifetime. Default is transient.
+- `register(ImplClass)` — registers an Implementation class (one created via `Abstraction.createImplementation`). Returns a `RegistrationBuilder` — chain `.inSingletonScope()` for one instance shared by all containers, or `.inContainerScope()` for one instance per resolving container. Default is transient. See §8.
 - `registerInstance(abstraction, value)` — registers a pre-built value. Always a "singleton" in effect.
-- `registerFactory(abstraction, () => value)` — registers a lazy factory, called once per resolution in transient scope, or once total in singleton scope depending on how you want it.
+- `registerFactory(abstraction, () => value)` — registers a lazy factory, called once per resolution in transient scope, once total in singleton scope, or once per container in container scope.
 - `resolve(abstraction)` — returns a single instance. Throws if nothing is registered.
 - `resolveAll(abstraction)` — returns `[]` if nothing is registered, an array otherwise.
 - `createChildContainer()` — child container that falls through to the parent on unresolved abstractions. Scoped overrides (e.g., per-request) live here.
@@ -506,14 +506,50 @@ await runner.run(...);
 ## 8. Lifetime scopes
 
 ```ts
-container.register(Impl);                   // Transient (default) — new instance per resolve
-container.register(Impl).inSingletonScope(); // Singleton — one instance per container
+container.register(Impl);                    // Transient (default) — new instance per resolve
+container.register(Impl).inSingletonScope(); // Singleton — one instance shared by ALL containers
+container.register(Impl).inContainerScope(); // Container — one instance per resolving container
 container.registerInstance(Abs, obj);        // Always "singleton" semantics (one obj)
 ```
 
-Singleton scope is per-container. Child containers get fresh singletons unless they resolve from the parent (they do, by default).
+### Singleton (`inSingletonScope()`)
 
-**House rule**: use singletons for stateless services (loggers, clients, repositories). Transient for anything that holds per-operation state (request handlers, contexts).
+One instance, shared by the container that holds the registration and every child container below it.
+
+The instance is built from the view of the container that holds the registration. Dependencies and decorators registered in a child container never end up in it. So the instance is the same no matter which container resolves it first.
+
+A decorator registered in a child container for a singleton registered in a parent can never apply. Resolving that singleton from the child throws an error instead of skipping the decorator silently. Register the decorator where the singleton is registered, or use `inContainerScope()`.
+
+### Container (`inContainerScope()`)
+
+One instance per container that resolves it. Register it once in a parent, and every child container gets its own instance. The child builds that instance from its own view (the child's dependencies and decorators) and caches it. Inside one container, it behaves like a singleton.
+
+```ts
+const root = new Container();
+root.register(RequestCacheImpl).inContainerScope();
+
+const request1 = root.createChildContainer();
+const request2 = root.createChildContainer();
+
+request1.resolve(RequestCache) === request1.resolve(RequestCache); // true
+request1.resolve(RequestCache) === request2.resolve(RequestCache); // false
+```
+
+Use it for state that must not outlive a child container, such as a per-request cache when you create one child container per request.
+
+> **History:** before `@webiny/di@2.0.0`, `inSingletonScope()` built the instance from the first container that resolved it. A child's dependencies or decorators could get baked into the instance that every other container then shared, so state leaked between requests. `2.0.0` fixed `inSingletonScope()` to the semantics above and added `inContainerScope()` for real per-container instances.
+
+### Decorators and lifetimes
+
+Decorators are collected from the resolving container plus its parents, applied parent first. The resolving container's decorator ends up outermost: `ChildDec(RootDec(impl))`. The one exception is a singleton: its decorators come only from the container that holds the registration.
+
+### House rule
+
+- **Singleton** for stateless services and process-wide resources (loggers, clients, repositories, config).
+- **Container** for state scoped to one child container (per-request or per-operation caches, contexts) when you use child containers.
+- **Transient** for anything that must be fresh on every resolve.
+
+This project uses one root container and no child containers, so every current registration is `inSingletonScope()`.
 
 ---
 
@@ -603,15 +639,20 @@ Registering two implementations of the same abstraction in the same container is
 - Register under different abstractions.
 - Pick one; delete the other.
 
-### 5. Forgetting `.inSingletonScope()` for stateful services
+### 5. Forgetting a scope for stateful services
 
 ```ts
 // ✗ Bad — every resolve gets a fresh cache
 container.register(InMemoryCache);
 
-// ✓ Good
+// ✓ Good — one cache for the whole process
 container.register(InMemoryCache).inSingletonScope();
+
+// ✓ Good — one cache per child container (e.g. per request)
+container.register(InMemoryCache).inContainerScope();
 ```
+
+Do not use `inSingletonScope()` for state that belongs to one request or operation: every child container shares that one instance.
 
 ### 6. Using string names to identify abstractions
 

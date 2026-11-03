@@ -48,7 +48,7 @@ When `segments > 1`, `Download` fans out to N workers that each write to `destPa
 - **No inline structural types** in generics, params, or return types. Extract every non-primitive type to a named `interface` / `type`.
 - **House rules:** every class method has an explicit `public` / `private` / `protected` modifier; single-line `if` / `for` always with braces.
 - **Path alias** `~/* → src/*` is configured in `tsconfig.json`. Use it for all intra-src imports (both inside `src/` and from `__tests__/`).
-- **Lifetime:** stateless services register as singletons (`.inSingletonScope()`).
+- **Lifetime:** stateless services register as singletons (`.inSingletonScope()`, one instance shared by all containers). Per-container state uses `.inContainerScope()` (one instance per resolving container, added in `@webiny/di@2.0.0`). See `docs/webiny-di-guide.md` §8.
 - **No `ContainerToken` yet** — not introduced in this codebase. Don't add without asking.
 - **No `aws-sdk-client-mock`** — tests use `dynalite` (local DDB emulator). The vitest `globalSetup` starts dynalite and sets `AWS_ENDPOINT_URL_DYNAMODB`; `ClientFactory` routes at it via that env var without code changes (uses `fromEnv` when the env var is set, `fromNodeProviderChain` otherwise).
 - **`reflect-metadata`** is loaded by `@webiny/di` internally. Never `import "reflect-metadata"` in user code.
